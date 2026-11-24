@@ -1,3 +1,7 @@
-// Organisms — complete UI sections (Sidebar, DataTable, Dialog, TicketList, …).
-// Organisms may import from molecules and atoms (and below).
-export {}
+// Organisms — complete UI sections built from molecules and atoms.
+// Organisms may import from molecules, atoms, ui/, lib/ and types/ (enforced by `npm run lint`).
+// Data always comes in through props — never import from src/mocks here.
+
+// 5a · Overlays
+export * from './confirmation-modal'
+export * from './dialog'

@@ -45,6 +45,10 @@
                   "**/pages/**"
                 ],
                 "message": "Layer rule: ui/ (shadcn primitives) must not import from atomic layers or pages."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
               }
             ],
             "paths": [
@@ -76,6 +80,10 @@
                   "**/pages/**"
                 ],
                 "message": "Layer rule: atoms may only import from ui/, lib/, types/ and other atoms."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
               }
             ],
             "paths": [
@@ -105,6 +113,10 @@
                   "**/pages/**"
                 ],
                 "message": "Layer rule: molecules may only import from atoms (and below)."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
               }
             ],
             "paths": [
@@ -127,6 +139,10 @@
               {
                 "group": ["**/templates", "**/templates/**", "**/pages", "**/pages/**"],
                 "message": "Layer rule: organisms may only import from molecules and atoms (and below)."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
               }
             ],
             "paths": [
@@ -149,6 +165,10 @@
               {
                 "group": ["**/pages", "**/pages/**"],
                 "message": "Layer rule: templates must not import from pages."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
               }
             ],
             "paths": [
@@ -171,6 +191,22 @@
       "files": ["src/lib/utils.ts"],
       "rules": {
         "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["**/*.stories.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
       }
     }
   ]
