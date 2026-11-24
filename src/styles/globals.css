@@ -95,4 +95,9 @@
   body {
     @apply bg-background text-body text-foreground;
   }
+  /* Tailwind v4 resets buttons to cursor: default — restore the pointer for anything clickable. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    @apply cursor-pointer;
+  }
 }
