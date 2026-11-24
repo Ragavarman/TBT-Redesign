@@ -5,3 +5,6 @@
 // 5a · Overlays
 export * from './confirmation-modal'
 export * from './dialog'
+
+// 5b · Data
+export * from './data-table'
