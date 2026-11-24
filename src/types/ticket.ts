@@ -31,3 +31,12 @@ export const TICKET_PRIORITY_LABEL: Record<TicketPriority, string> = {
   high: 'High',
   urgent: 'Urgent',
 }
+
+export const SLA_STATES = ['on-track', 'at-risk', 'breached'] as const
+export type SlaState = (typeof SLA_STATES)[number]
+
+export const SLA_STATE_LABEL: Record<SlaState, string> = {
+  'on-track': 'On track',
+  'at-risk': 'At risk',
+  breached: 'Breached',
+}
