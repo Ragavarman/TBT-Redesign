@@ -9,6 +9,17 @@
       {
         "allowConstantExport": true
       }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "cn",
+            "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+          }
+        ]
+      }
     ]
   },
   "overrides": [
@@ -35,6 +46,12 @@
                 ],
                 "message": "Layer rule: ui/ (shadcn primitives) must not import from atomic layers or pages."
               }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
             ]
           }
         ]
@@ -60,6 +77,12 @@
                 ],
                 "message": "Layer rule: atoms may only import from ui/, lib/, types/ and other atoms."
               }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
             ]
           }
         ]
@@ -83,6 +106,12 @@
                 ],
                 "message": "Layer rule: molecules may only import from atoms (and below)."
               }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
             ]
           }
         ]
@@ -98,6 +127,12 @@
               {
                 "group": ["**/templates", "**/templates/**", "**/pages", "**/pages/**"],
                 "message": "Layer rule: organisms may only import from molecules and atoms (and below)."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
               }
             ]
           }
@@ -115,6 +150,12 @@
                 "group": ["**/pages", "**/pages/**"],
                 "message": "Layer rule: templates must not import from pages."
               }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
             ]
           }
         ]
@@ -124,6 +165,12 @@
       "files": [".storybook/**", "**/*.stories.tsx", "src/foundations/**"],
       "rules": {
         "react/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["src/lib/utils.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
       }
     }
   ]
