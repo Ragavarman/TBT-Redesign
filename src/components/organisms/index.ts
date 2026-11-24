@@ -8,3 +8,9 @@ export * from './dialog'
 
 // 5b · Data
 export * from './data-table'
+
+// 5c · App navigation
+export * from './app-rail'
+export * from './sidebar'
+export * from './sub-navigation'
+export * from './workspace-header'

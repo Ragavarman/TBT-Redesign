@@ -3,6 +3,7 @@
  * Not part of the component library — never import from components themselves.
  */
 export * from './assets'
+export * from './navigation'
 export * from './people'
 export * from './tickets'
 export * from './time'
