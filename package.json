@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
-    "tokens": "node scripts/generate-tokens.mjs && prettier --write src/styles/tokens.css src/lib/theme/tokens.generated.ts"
+    "tokens": "node scripts/generate-tokens.mjs && prettier --write src/styles/tokens.css src/lib/theme/tokens.generated.ts",
+    "ui:fix": "node scripts/fix-shadcn-radix.mjs && prettier --write src/components/ui"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
