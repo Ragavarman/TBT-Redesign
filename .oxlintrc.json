@@ -119,6 +119,12 @@
           }
         ]
       }
+    },
+    {
+      "files": [".storybook/**", "**/*.stories.tsx", "src/foundations/**"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
     }
   ]
 }
