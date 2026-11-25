@@ -1,35 +1,82 @@
-import { useMemo, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 import { toast } from '@/components/molecules'
-import { NewTicketDialog, type NewTicketSubmit } from '@/components/organisms'
+import { IncomingCallCard, NewTicketDialog, type NewTicketSubmit } from '@/components/organisms'
 import { useHotkeys } from '@/hooks/useHotkeys'
 import { WS_NOW, wsAgents, wsCurrentAgent, wsCustomers, wsTickets } from '@/mocks'
-import { formatTicketId, type Ticket } from '@/types'
+import { formatTicketId, type Customer, type Ticket } from '@/types'
 import { ticketPath } from './nav'
-import { WorkspaceContext, type WorkspaceValue } from './workspace-context'
+import { WorkspaceContext, type TicketChange, type WorkspaceValue } from './workspace-context'
 
 const customers = Object.values(wsCustomers)
 const TEAMS = ['Support Team Alpha', 'Technical Team Beta', 'Sales Team Gamma']
 const APPLICATIONS = ['Customer Portal', 'POS', 'Inventory', 'Payments']
 const LABELS = ['Voicemail', 'Hardware', 'Billing', 'Payments', 'Access']
 
+/** The demo caller (Figma X11). */
+const CALLER: Customer = wsCustomers.dennis
+const CALL_KEY = 'tbt-demo-call-shown'
+
+function callAlreadyShown() {
+  try {
+    return sessionStorage.getItem(CALL_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 /**
- * Root of every screen: tickets created this session, and the New ticket dialog (C from
- * anywhere, or any "New ticket" button). Lives inside the router so it can open what it made.
+ * Root of every screen: tickets created or edited this session, the New ticket dialog (C from
+ * anywhere, or any "New ticket" button) and the incoming-call notice. Lives inside the router so
+ * it can open what it made.
  */
 export function WorkspaceRoot() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [created, setCreated] = useState<Ticket[]>([])
+  const [edits, setEdits] = useState<Record<number, Partial<Ticket>>>({})
   const [open, setOpen] = useState(false)
+  const [prefill, setPrefill] = useState<string>()
+  const [calling, setCalling] = useState(() => new URLSearchParams(location.search).has('call'))
 
-  useHotkeys({ c: () => setOpen(true) })
+  useHotkeys({ c: () => newTicket() })
 
-  const tickets = useMemo(() => [...created, ...wsTickets], [created])
+  // Demo: one incoming call per browser session, a few seconds after the app opens.
+  useEffect(() => {
+    if (calling || callAlreadyShown()) return
+    const t = setTimeout(() => setCalling(true), 6000)
+    return () => clearTimeout(t)
+  }, [calling])
+  useEffect(() => {
+    if (!calling) return
+    try {
+      sessionStorage.setItem(CALL_KEY, '1')
+    } catch {
+      /* storage unavailable — the call may show again on reload */
+    }
+  }, [calling])
+
+  const tickets = useMemo(
+    () => [...created, ...wsTickets].map((t) => (edits[t.id] ? { ...t, ...edits[t.id] } : t)),
+    [created, edits],
+  )
+
+  function newTicket(customerId?: string) {
+    setPrefill(customerId)
+    setOpen(true)
+  }
+
   const value = useMemo<WorkspaceValue>(
     () => ({
       tickets,
       addTicket: (t) => setCreated((list) => [t, ...list]),
-      newTicket: () => setOpen(true),
+      updateTickets: (changes: TicketChange[]) =>
+        setEdits((e) => {
+          const next = { ...e }
+          for (const { id, patch } of changes) next[id] = { ...next[id], ...patch }
+          return next
+        }),
+      newTicket: () => newTicket(),
     }),
     [tickets],
   )
@@ -58,10 +105,16 @@ export function WorkspaceRoot() {
     if (!another) navigate(ticketPath('all', id))
   }
 
+  const callerTickets = tickets.filter(
+    (t) => t.requester.id === CALLER.id && t.status !== 'resolved' && t.status !== 'closed',
+  )
+
   return (
     <WorkspaceContext.Provider value={value}>
       <Outlet />
       <NewTicketDialog
+        // remount so a call's caller is picked when it opens
+        key={prefill ?? 'blank'}
         open={open}
         onOpenChange={setOpen}
         customers={customers.map((c) => ({
@@ -74,8 +127,32 @@ export function WorkspaceRoot() {
         teams={TEAMS}
         applications={APPLICATIONS}
         labels={LABELS}
+        defaultCustomerId={prefill}
         onCreate={create}
       />
+      {calling && (
+        <IncomingCallCard
+          caller={{ name: CALLER.name, phone: CALLER.phone ?? '' }}
+          tags={['Frequent caller']}
+          source="RingCentral · main line"
+          openTickets={callerTickets.map((t) => ({
+            id: t.id,
+            label: formatTicketId(t.id),
+            subject: t.subject,
+            status: t.status,
+          }))}
+          startedSeconds={3}
+          onOpenTicket={(id) => {
+            setCalling(false)
+            navigate(ticketPath('all', id))
+          }}
+          onNewTicket={() => {
+            setCalling(false)
+            newTicket(CALLER.id)
+          }}
+          onDismiss={() => setCalling(false)}
+        />
+      )}
     </WorkspaceContext.Provider>
   )
 }

@@ -35,7 +35,7 @@ function ViewRoute() {
   const { module = 'inbox', view } = useParams()
   const navigate = useNavigate()
   const { views } = useSavedViews()
-  const { tickets, newTicket } = useWorkspace()
+  const { tickets, newTicket, updateTickets } = useWorkspace()
   const saveView = useSaveView()
   if (!view) {
     const first = defaultView(module)
@@ -53,6 +53,7 @@ function ViewRoute() {
           onOpenTicket={open}
           onSaveView={saveView}
           onNewTicket={newTicket}
+          onUpdateTickets={updateTickets}
         />
       )
     }
@@ -73,6 +74,14 @@ function ViewRoute() {
           onOpenTicket={open}
           onSaveView={saveView}
           onNewTicket={newTicket}
+          caughtUpAction={
+            view === 'my-tickets'
+              ? {
+                  label: `View unassigned (${ticketsForView('unassigned', [], tickets).length})`,
+                  onClick: () => navigate(viewPath('inbox', 'unassigned')),
+                }
+              : undefined
+          }
         />
       )
     }

@@ -283,3 +283,9 @@ export interface SavedView {
   visibility: ViewVisibility
   favorite: boolean
 }
+
+/** One ticket edit — bulk actions send these, and their previous values to undo. */
+export interface TicketChange {
+  id: number
+  patch: Partial<Ticket>
+}

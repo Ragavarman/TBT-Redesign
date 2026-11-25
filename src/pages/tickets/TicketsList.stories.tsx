@@ -58,6 +58,14 @@ export const CompactByPriority: Story = {
   },
 }
 
+/** Figma X27 · inbox zero: nothing open, so offer the unassigned queue and all statuses. */
+export const InboxZero: Story = {
+  args: {
+    tickets: wsTickets.filter((t) => t.status === 'resolved' || t.status === 'closed'),
+    caughtUpAction: { label: 'View unassigned (8)', onClick: () => {} },
+  },
+}
+
 /** Filters that match nothing. */
 export const NoMatches: Story = {
   args: {

@@ -38,6 +38,11 @@ export interface TicketsListPageProps {
   onNewTicket?: () => void
   /** Stories: open a control on load. */
   initialOpen?: 'filters' | 'display' | 'save'
+  /**
+   * Inbox zero (Figma X27): what to offer when nothing is left to do, e.g. View unassigned.
+   * Shown on the Todo tab when there are no filters and no open tickets.
+   */
+  caughtUpAction?: { label: string; onClick: () => void }
 }
 
 export function TicketsListPage({
@@ -51,6 +56,7 @@ export function TicketsListPage({
   onSaveView,
   initialOpen,
   onNewTicket,
+  caughtUpAction,
 }: TicketsListPageProps) {
   const [scope, setScope] = useState<Scope>('todo')
   const todo = tickets.filter((t) => t.status !== 'resolved' && t.status !== 'closed')
@@ -104,7 +110,34 @@ export function TicketsListPage({
       }
     >
       <div ref={list}>
-        {view.shown.length === 0 ? (
+        {view.shown.length === 0 && scope === 'todo' && view.filters.length === 0 ? (
+          // Figma X27 · inbox zero
+          <div className="flex h-[60vh] items-center justify-center p-6">
+            <EmptyState
+              icon="check"
+              title="You’re all caught up"
+              description={
+                tickets.length > 0
+                  ? `Nothing needs you right now. ${tickets.length} resolved or closed ${tickets.length === 1 ? 'ticket is' : 'tickets are'} under All statuses.`
+                  : 'Nothing needs you right now.'
+              }
+              action={
+                <div className="flex flex-col items-center gap-2">
+                  {caughtUpAction && (
+                    <Button size="sm" onClick={caughtUpAction.onClick}>
+                      {caughtUpAction.label}
+                    </Button>
+                  )}
+                  {tickets.length > 0 && (
+                    <Button size="sm" variant="ghost" onClick={() => setScope('all')}>
+                      See all statuses
+                    </Button>
+                  )}
+                </div>
+              }
+            />
+          </div>
+        ) : view.shown.length === 0 ? (
           <div className="flex h-80 items-center justify-center p-6">
             <EmptyState
               type={view.filters.length ? 'no-results' : 'empty'}
