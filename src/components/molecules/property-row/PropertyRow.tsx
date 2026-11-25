@@ -3,7 +3,7 @@ import { Icon } from '@/components/atoms'
 import { cn } from '@/lib/utils'
 
 export interface PropertyRowProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /** Property name (Small, muted, 96px column). */
+  /** Property name (Small, muted, 104px column — fits "Customer since"). */
   label: ReactNode
   /** The value — text, TicketStatusBadge, PriorityBadge, Avatar + name, Badges, SlaBadge … */
   children?: ReactNode
@@ -26,7 +26,7 @@ export function PropertyRow({ label, children, action, className, ...props }: Pr
       data-slot="property-row"
       role="group"
       aria-labelledby={id}
-      className={cn('grid min-h-8 grid-cols-[6rem_minmax(0,1fr)] items-center gap-2', className)}
+      className={cn('grid min-h-8 grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-2', className)}
       {...props}
     >
       <span id={id} className="truncate text-small text-muted-foreground">

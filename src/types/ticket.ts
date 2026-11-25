@@ -92,3 +92,87 @@ export interface TicketEvent {
   internal?: boolean
   at: string
 }
+
+/* ── Ticket detail (Figma Interface · T1–T3) ─────────────────────────────────────────── */
+
+/** Timeline filter groups (Figma T3 chips: All / Messages / Notes / Status / Calls). */
+export type TicketActivityKind = 'message' | 'note' | 'status' | 'call'
+
+/** One entry on the ticket's full timeline. */
+export interface TicketActivity {
+  id: string
+  kind: TicketActivityKind
+  /** Who did it — a person, or "System" for routing rules. */
+  actor: { name: string; avatarUrl?: string }
+  /** "Tharsi added an internal note". */
+  title: string
+  /** Second line: a quote, "Medium → Urgent", "3 min 12 s · recorded". */
+  detail?: string
+  /** ISO timestamp. */
+  at: string
+}
+
+/** One message in the Conversation tab. */
+export interface TicketMessage {
+  id: string
+  author: { name: string; avatarUrl?: string }
+  /** customer — from the requester · agent — a reply · note — internal, agents only. */
+  from: 'customer' | 'agent' | 'note'
+  /** How it arrived, e.g. "Email", "Voicemail · 0:48". */
+  via?: string
+  body: string
+  at: string
+}
+
+export type TicketAttachmentKind = 'image' | 'audio' | 'document' | 'file'
+
+export interface TicketAttachment {
+  id: string
+  name: string
+  kind: TicketAttachmentKind
+  /** Bytes. */
+  size: number
+  /** "from Dennis", "from RingCentral", "added by Tharsi". */
+  source: string
+}
+
+/** The email that opened the ticket (Figma T1 · Original email). */
+export interface TicketEmail {
+  from: string
+  to: string
+  /** ISO timestamp. */
+  date: string
+  subject: string
+  /** Paragraphs. */
+  body: string[]
+  /** Earlier thread, hidden behind "Show quoted text". */
+  quoted?: string[]
+  attachmentIds: string[]
+}
+
+/** Everything the ticket detail page shows beyond the list row. */
+export interface TicketDetail {
+  /** "Phone · via Zendesk #3690273". */
+  source: string
+  application: string
+  messages: TicketMessage[]
+  activity: TicketActivity[]
+  email?: TicketEmail
+  attachments: TicketAttachment[]
+  asset?: string
+  invoice?: string
+  similar: { id: number; subject: string; status: TicketStatus; timeLabel: string }[]
+  customer: {
+    tag?: string
+    tickets: number
+    open: number
+    /** ISO date. */
+    since: string
+  }
+}
+
+/** "412 KB", "1.2 MB". */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}

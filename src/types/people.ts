@@ -19,5 +19,7 @@ export interface Agent extends Person {
 export interface Customer extends Person {
   organization: string
   openTickets: number
+  /** Callers often have only a number. */
+  phone?: string
   vip?: boolean
 }

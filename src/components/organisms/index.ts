@@ -29,3 +29,8 @@ export * from './filter-chips'
 export * from './kpi-strip'
 export * from './page-header'
 export * from './settings-section'
+
+// 7 · Ticket detail
+export * from './attachment-tile'
+export * from './email-view'
+export * from './ticket-timeline'

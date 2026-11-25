@@ -91,9 +91,15 @@ export interface TicketsTablePageProps {
   /** The app sidebar (route-aware in the app, mock in Storybook). */
   sidebar: ReactNode
   initialSelection?: RowSelectionState
+  /** Row click — open the ticket. */
+  onOpenTicket?: (id: number) => void
 }
 
-export function TicketsTablePage({ sidebar, initialSelection = {} }: TicketsTablePageProps) {
+export function TicketsTablePage({
+  sidebar,
+  initialSelection = {},
+  onOpenTicket,
+}: TicketsTablePageProps) {
   const [selection, setSelection] = useState<RowSelectionState>(initialSelection)
   const count = Object.values(selection).filter(Boolean).length
   const all = count === wsTickets.length
@@ -167,7 +173,7 @@ export function TicketsTablePage({ sidebar, initialSelection = {} }: TicketsTabl
         rowSelection={selection}
         onRowSelectionChange={setSelection}
         pageSize={false}
-        onRowClick={() => {}}
+        onRowClick={onOpenTicket && ((t) => onOpenTicket(t.id))}
       />
     </ListPageTemplate>
   )

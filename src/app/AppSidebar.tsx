@@ -27,10 +27,15 @@ function writeCollapsed(v: boolean) {
  * The app sidebar, driven by the URL: the rail picks the module (/:module), the sub-navigation
  * picks the view (/:module/:view). Collapsed state survives page changes for the session.
  */
-export function AppSidebar() {
+export function AppSidebar({
+  initialCollapsed,
+}: {
+  /** Start collapsed/expanded on this screen regardless of the remembered state (not saved). */
+  initialCollapsed?: boolean
+}) {
   const { module = 'inbox', view } = useParams()
   const navigate = useNavigate()
-  const [collapsed, setCollapsed] = useState(readCollapsed)
+  const [collapsed, setCollapsed] = useState(initialCollapsed ?? readCollapsed)
   const nav = moduleNav[module] ?? moduleNav.inbox!
 
   return (
@@ -38,7 +43,7 @@ export function AppSidebar() {
       collapsed={collapsed}
       onCollapsedChange={(v) => {
         setCollapsed(v)
-        writeCollapsed(v)
+        if (initialCollapsed === undefined) writeCollapsed(v)
       }}
       rail={{
         modules: railModules,
