@@ -201,6 +201,13 @@
   html {
     @apply font-sans antialiased;
   }
+  /* Scroll areas still scroll (wheel, touch, keyboard) — the bars are just hidden. */
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
   body {
     @apply bg-background text-body text-foreground;
   }
