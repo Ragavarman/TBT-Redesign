@@ -131,6 +131,10 @@ export interface TicketsTablePageProps {
   /** Row click — open the ticket. */
   onOpenTicket?: (id: number) => void
   onSaveView?: (view: SavedView) => void
+  /** The workspace's tickets (defaults to the mock set). */
+  tickets?: Ticket[]
+  /** New ticket button (C opens it from anywhere in the app). */
+  onNewTicket?: () => void
   /** Stories: open a control on load. */
   initialOpen?: 'filters' | 'display' | 'save'
 }
@@ -144,9 +148,11 @@ export function TicketsTablePage({
   onOpenTicket,
   onSaveView,
   initialOpen,
+  tickets = wsTickets,
+  onNewTicket,
 }: TicketsTablePageProps) {
   const view = useTicketView({
-    tickets: wsTickets,
+    tickets,
     layout: 'table',
     title: 'All tickets',
     initialDisplay: { props: ['id', 'customer', 'priority', 'assignee', 'updated'] },
@@ -191,7 +197,9 @@ export function TicketsTablePage({
           actions={
             <>
               {view.controls}
-              <Button leadingIcon="plus">New ticket</Button>
+              <Button leadingIcon="plus" shortcut="C" onClick={onNewTicket}>
+                New ticket
+              </Button>
             </>
           }
         />

@@ -21,22 +21,26 @@ const VIEW_STATUS: Record<string, TicketStatus> = { 'needs-response': 'open' }
  * Tickets an inbox view lists, before the agent's own filters. Saved views apply their filters.
  * The mock workspace is small, so a few views (Mentions, Created by me…) show everything.
  */
-export function ticketsForView(view: string, saved: SavedView[] = []): Ticket[] {
+export function ticketsForView(
+  view: string,
+  saved: SavedView[] = [],
+  all: Ticket[] = wsTickets,
+): Ticket[] {
   const savedView = saved.find((v) => v.id === view)
-  if (savedView) return applyFilters(wsTickets, savedView.filters)
+  if (savedView) return applyFilters(all, savedView.filters)
   const status = VIEW_STATUS[view] ?? (TICKET_STATUSES as readonly string[]).find((s) => s === view)
-  if (status) return wsTickets.filter((t) => t.status === status)
+  if (status) return all.filter((t) => t.status === status)
   switch (view) {
     case 'my-tickets':
-      return wsTickets.filter((t) => t.assignee?.id === wsCurrentAgent.id)
+      return all.filter((t) => t.assignee?.id === wsCurrentAgent.id)
     case 'unassigned':
-      return wsTickets.filter((t) => !t.assignee)
+      return all.filter((t) => !t.assignee)
     case 'sla-risk':
-      return wsTickets.filter((t) => t.sla && t.sla.state !== 'on-track')
+      return all.filter((t) => t.sla && t.sla.state !== 'on-track')
     case 'high-urgent':
-      return wsTickets.filter((t) => t.priority === 'high' || t.priority === 'urgent')
+      return all.filter((t) => t.priority === 'high' || t.priority === 'urgent')
     default:
-      return wsTickets
+      return all
   }
 }
 

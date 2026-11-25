@@ -34,6 +34,8 @@ export interface TicketsListPageProps {
   initialDisplay?: Partial<DisplayOptions>
   onOpenTicket?: (id: number) => void
   onSaveView?: (view: SavedView) => void
+  /** New ticket button (C opens it from anywhere in the app). */
+  onNewTicket?: () => void
   /** Stories: open a control on load. */
   initialOpen?: 'filters' | 'display' | 'save'
 }
@@ -48,6 +50,7 @@ export function TicketsListPage({
   onOpenTicket,
   onSaveView,
   initialOpen,
+  onNewTicket,
 }: TicketsListPageProps) {
   const [scope, setScope] = useState<Scope>('todo')
   const todo = tickets.filter((t) => t.status !== 'resolved' && t.status !== 'closed')
@@ -82,7 +85,9 @@ export function TicketsListPage({
           actions={
             <>
               {view.controls}
-              <Button leadingIcon="plus">New ticket</Button>
+              <Button leadingIcon="plus" shortcut="C" onClick={onNewTicket}>
+                New ticket
+              </Button>
             </>
           }
         />

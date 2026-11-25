@@ -18,6 +18,8 @@ import {
 } from './nav'
 import { useSavedViews } from './saved-views-context'
 import { SavedViewsProvider } from './SavedViewsProvider'
+import { useWorkspace } from './workspace-context'
+import { WorkspaceRoot } from './WorkspaceRoot'
 
 /** Save a view, then go to it — it now sits in the sidebar under Views. */
 function useSaveView() {
@@ -33,6 +35,7 @@ function ViewRoute() {
   const { module = 'inbox', view } = useParams()
   const navigate = useNavigate()
   const { views } = useSavedViews()
+  const { tickets, newTicket } = useWorkspace()
   const saveView = useSaveView()
   if (!view) {
     const first = defaultView(module)
@@ -43,7 +46,15 @@ function ViewRoute() {
     const open = (id: number) => navigate(ticketPath(view, id))
     // All tickets is the table (Figma 02); every other inbox view is the grouped list (X3/X4)
     if (view === 'all') {
-      return <TicketsTablePage sidebar={<AppSidebar />} onOpenTicket={open} onSaveView={saveView} />
+      return (
+        <TicketsTablePage
+          sidebar={<AppSidebar />}
+          tickets={tickets}
+          onOpenTicket={open}
+          onSaveView={saveView}
+          onNewTicket={newTicket}
+        />
+      )
     }
     const saved = views.find((v) => v.id === view)
     const item = findNavItem('inbox', view)
@@ -56,11 +67,12 @@ function ViewRoute() {
           icon={
             saved ? 'reports' : typeof item?.icon === 'string' ? (item.icon as IconName) : 'inbox'
           }
-          tickets={saved ? ticketsForView('all') : ticketsForView(view)}
+          tickets={ticketsForView(saved ? 'all' : view, [], tickets)}
           initialFilters={saved?.filters}
           initialDisplay={saved?.display}
           onOpenTicket={open}
           onSaveView={saveView}
+          onNewTicket={newTicket}
         />
       )
     }
@@ -84,8 +96,9 @@ function TicketRoute() {
   const { view = 'all', ticketId } = useParams()
   const navigate = useNavigate()
   const { views } = useSavedViews()
+  const { tickets: all } = useWorkspace()
   const id = parseTicketId(ticketId)
-  const tickets = ticketsForView(view, views)
+  const tickets = ticketsForView(view, views, all)
   const ticket = tickets.find((t) => t.id === id)
   if (!ticket) return <Navigate to={viewPath('inbox', view)} replace />
   const saved = views.find((v) => v.id === view)
@@ -106,10 +119,15 @@ function TicketRoute() {
 }
 
 const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/inbox/all" replace /> },
-  { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
-  { path: '/:module/:view?', element: <ViewRoute /> },
-  { path: '*', element: <Navigate to="/" replace /> },
+  {
+    element: <WorkspaceRoot />,
+    children: [
+      { path: '/', element: <Navigate to="/inbox/all" replace /> },
+      { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
+      { path: '/:module/:view?', element: <ViewRoute /> },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
 ])
 
 export function App() {

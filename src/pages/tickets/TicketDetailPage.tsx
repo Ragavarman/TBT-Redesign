@@ -31,7 +31,9 @@ import {
   EmailView,
   FilterChips,
   InternalNote,
+  InvoiceSheet,
   LinkedTicketRow,
+  MergeDialog,
   ResolveDialog,
   SnoozeMenu,
   snoozeLabel,
@@ -43,6 +45,8 @@ import {
   TimelineEntry,
   type ComposerMode,
   type ComposerSubmit,
+  type InvoiceSubmit,
+  type MergeCandidate,
   type ResolveSubmit,
   type SnoozeUntil,
 } from '@/components/organisms'
@@ -56,6 +60,7 @@ import {
   wsCurrentAgent,
   wsMentionables,
   wsTickets,
+  wsGeneratedDetail,
   wsTicketDetail,
 } from '@/mocks'
 import { cn } from '@/lib/utils'
@@ -453,6 +458,9 @@ function DetailsCard({
   statusPicker,
   assigneePicker,
   detail,
+  invoice,
+  mergedInto,
+  onAddInvoice,
 }: {
   ticket: Ticket
   team: string
@@ -464,6 +472,11 @@ function DetailsCard({
   /** <AssigneePicker /> with its trigger — the Assignee value. */
   assigneePicker: ReactNode
   detail: TicketDetail
+  /** The linked invoice, once added (Figma T5). */
+  invoice?: InvoiceSubmit
+  /** Ticket this one was merged into (Figma T4). */
+  mergedInto?: string
+  onAddInvoice: () => void
 }) {
   return (
     <section
@@ -492,9 +505,28 @@ function DetailsCard({
         <PropertyRow label="Asset" action={{ label: 'Link device', onClick: () => {} }}>
           {detail.asset}
         </PropertyRow>
-        <PropertyRow label="Invoice" action={{ label: 'Add invoice', onClick: () => {} }}>
-          {detail.invoice}
+        <PropertyRow label="Invoice" action={{ label: 'Add invoice', onClick: onAddInvoice }}>
+          {invoice && (
+            <>
+              <span className="truncate">
+                {invoice.number} · {invoice.currency}{' '}
+                {invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
+              <Badge
+                variant={
+                  invoice.status === 'Paid'
+                    ? 'success'
+                    : invoice.status === 'Overdue'
+                      ? 'destructive'
+                      : 'neutral'
+                }
+              >
+                {invoice.status}
+              </Badge>
+            </>
+          )}
         </PropertyRow>
+        {mergedInto && <PropertyRow label="Merged into">{mergedInto}</PropertyRow>}
       </DetailsGroup>
       {detail.similar.length > 0 && (
         <DetailsGroup title="Similar tickets" count={detail.similar.length}>
@@ -560,6 +592,8 @@ export interface TicketDetailPageProps {
   initialComposerText?: string
   /** Open the resolve dialog on load (story: Figma X8). */
   initialResolve?: boolean
+  /** Open Merge (T4) or Add invoice (T5) on load. */
+  initialOverlay?: 'merge' | 'invoice'
   onBack: () => void
   onOpenTicket: (id: number) => void
 }
@@ -595,10 +629,11 @@ export function TicketDetailPage({
   initialComposer,
   initialComposerText,
   initialResolve,
+  initialOverlay,
   onBack,
   onOpenTicket,
 }: TicketDetailPageProps) {
-  const detail = wsTicketDetail(ticket.id)!
+  const baseDetail = wsTicketDetail(ticket.id) ?? wsGeneratedDetail(ticket)
   const me = wsCurrentAgent
   const [tab, setTab] = useState<TicketTab>(initialTab)
   const [picker, setPicker] = useState<Picker | null>(initialPicker ?? null)
@@ -612,11 +647,17 @@ export function TicketDetailPage({
   const [assignee, setAssignee] = useState<Agent | undefined>(ticket.assignee)
   const [team, setTeam] = useState(ticket.team)
   const [snoozed, setSnoozed] = useState<SnoozeUntil>()
-  const [activity, setActivity] = useState<TicketActivity[]>(detail.activity)
-  const [messages, setMessages] = useState<TicketMessage[]>(detail.messages)
+  const [activity, setActivity] = useState<TicketActivity[]>(baseDetail.activity)
+  const [messages, setMessages] = useState<TicketMessage[]>(baseDetail.messages)
   const [priority, setPriority] = useState<TicketPriority>(ticket.priority)
-  const [resolution, setResolution] = useState(detail.resolution)
+  const [resolution, setResolution] = useState(baseDetail.resolution)
   const [resolveOpen, setResolveOpen] = useState(initialResolve ?? false)
+  // Merge (T4) and Add invoice (T5)
+  const [overlay, setOverlay] = useState<'merge' | 'invoice' | null>(initialOverlay ?? null)
+  const [invoice, setInvoice] = useState<InvoiceSubmit>()
+  const [mergedInto, setMergedInto] = useState<string>()
+  const [attachments, setAttachments] = useState(baseDetail.attachments)
+  const detail = { ...baseDetail, attachments }
   // SLA: a reply is the first response; escalating hands it to the lead
   const [responded, setResponded] = useState(false)
   const [escalated, setEscalated] = useState(false)
@@ -790,12 +831,86 @@ export function TicketDetailPage({
     h: () => !resolved && setPicker('snooze'),
     e: () => (resolved ? reopen() : changeStatus('resolved')),
     'shift+e': () => !resolved && setResolveOpen(true),
+    m: () => !closed && setOverlay('merge'),
     j: () => step(1),
     k: () => step(-1),
     escape: onBack,
   })
 
   const firstName = ticket.requester.name.split(' ')[0] ?? ticket.requester.name
+
+  // Merge candidates: this ticket's similar tickets and the same caller's first, then the rest.
+  const sameCaller = (t: Ticket) => t.requester.id === ticket.requester.id
+  const mergeCandidates: MergeCandidate[] = [
+    ...detail.similar.map((s) => ({
+      id: s.id,
+      label: formatTicketId(s.id),
+      subject: s.subject,
+      status: s.status,
+      timeLabel: s.timeLabel,
+      customer: ticket.requester.name,
+      suggested: true,
+    })),
+    ...tickets
+      .filter((t) => t.id !== ticket.id && !detail.similar.some((s) => s.id === t.id))
+      .map((t) => ({
+        id: t.id,
+        label: formatTicketId(t.id),
+        subject: t.subject,
+        status: t.status,
+        timeLabel: shortAgo(t.updatedAt),
+        customer: t.requester.name,
+        suggested: sameCaller(t),
+      })),
+  ]
+
+  const merge = ({ targetId, notify }: { targetId: number; notify: boolean }) => {
+    const target = formatTicketId(targetId)
+    log(`${me.name} merged the ticket`, `Into ${target}`)
+    if (notify) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: `local-m${seq.current}`,
+          author: me,
+          from: 'agent',
+          via: 'Email',
+          body: `Hi ${firstName}, we’ve combined this with your other request (${target}) so everything is in one place.`,
+          at: stamp(),
+        },
+      ])
+    }
+    setMergedInto(target)
+    setStatus('closed')
+    setComposer(null)
+    setSnoozed(undefined)
+    setResolution({ by: me.name, at: stamp() })
+    toast.success(`${formatTicketId(ticket.id)} merged into ${target}`, {
+      action: { label: 'Open', onClick: () => onOpenTicket(targetId) },
+    })
+  }
+
+  const addInvoice = (inv: InvoiceSubmit) => {
+    setInvoice(inv)
+    if (inv.file) {
+      const file = inv.file
+      setAttachments((a) => [
+        ...a,
+        {
+          id: `inv-${a.length}`,
+          name: file.name,
+          kind: 'document',
+          size: file.size,
+          source: `added by ${me.name}`,
+        },
+      ])
+    }
+    log(
+      `${me.name} linked an invoice`,
+      `${inv.number} · ${inv.currency} ${inv.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} · ${inv.status}`,
+    )
+    toast.success(`${inv.number} linked to ${formatTicketId(ticket.id)}`)
+  }
 
   // Ticket-state banner under the tabs (Figma X9 closed, X10 SLA breached).
   const banner = resolved ? (
@@ -855,6 +970,25 @@ export function TicketDetailPage({
 
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as TicketTab)} className="contents">
+      <MergeDialog
+        open={overlay === 'merge'}
+        onOpenChange={(o) => setOverlay(o ? 'merge' : null)}
+        ticketLabel={formatTicketId(ticket.id)}
+        candidates={mergeCandidates}
+        onMerge={merge}
+      />
+      <InvoiceSheet
+        key={overlay === 'invoice' ? 'invoice-open' : 'invoice'}
+        open={overlay === 'invoice'}
+        onOpenChange={(o) => setOverlay(o ? 'invoice' : null)}
+        linkedTo={`Linked to ${formatTicketId(ticket.id)} · ${ticket.requester.name}`}
+        customer={[ticket.requester.name, ticket.requester.phone ?? ticket.requester.email].join(
+          ' · ',
+        )}
+        defaultNumber={`INV-${1043 + (ticket.id % 50)}`}
+        today={WS_NOW.slice(0, 10)}
+        onAdd={addInvoice}
+      />
       <ResolveDialog
         open={resolveOpen}
         onOpenChange={setResolveOpen}
@@ -919,7 +1053,27 @@ export function TicketDetailPage({
               >
                 {resolved ? 'Reopen' : 'Resolve'}
               </Button>
-              <IconButton icon="dots" label="More actions" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <IconButton icon="dots" label="More actions" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem
+                    icon="layers"
+                    shortcut="M"
+                    disabled={closed}
+                    onSelect={() => setOverlay('merge')}
+                  >
+                    Merge into another ticket
+                  </DropdownMenuItem>
+                  <DropdownMenuItem icon="ticket" onSelect={() => setOverlay('invoice')}>
+                    Add invoice
+                  </DropdownMenuItem>
+                  <DropdownMenuItem icon="phone" disabled={closed} onSelect={() => compose('call')}>
+                    Log a call
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
         }
@@ -1011,6 +1165,9 @@ export function TicketDetailPage({
               priority={priority}
               sla={slaValue}
               detail={detail}
+              invoice={invoice}
+              mergedInto={mergedInto}
+              onAddInvoice={() => setOverlay('invoice')}
               statusPicker={
                 <StatusPicker
                   status={status}

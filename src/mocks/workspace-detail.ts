@@ -175,8 +175,8 @@ const t222: TicketDetail = {
   customer: { tag: 'Frequent caller', tickets: 3, open: 2, since: '2026-11-04' },
 }
 
-/** A short, believable thread for tickets without hand-written detail. */
-function generated(t: Ticket): TicketDetail {
+/** A short, believable thread for tickets without hand-written detail (also new tickets). */
+export function wsGeneratedDetail(t: Ticket): TicketDetail {
   const created = {
     id: `${t.id}-a2`,
     kind: 'message' as const,
@@ -243,7 +243,7 @@ export function wsTicketDetail(id: number): TicketDetail | undefined {
   const known = DETAILS.get(id)
   if (known) return known
   const ticket = wsTickets.find((t) => t.id === id)
-  return ticket && generated(ticket)
+  return ticket && wsGeneratedDetail(ticket)
 }
 
 /** Canned replies — typed as "/shortcut" in a reply (Figma X6). */

@@ -84,5 +84,11 @@ export const SlaBreached: Story = {
   args: { ticket: wsTickets.find((t) => t.sla?.state === 'breached')! },
 }
 
+/** Figma T4 · Merge into another ticket (⋯ menu or M): suggestions from the same caller. */
+export const Merge: Story = { args: { initialOverlay: 'merge' } }
+
+/** Figma T5 · Add invoice side sheet (⋯ menu or Linked → Add invoice). */
+export const AddInvoice: Story = { args: { initialOverlay: 'invoice' } }
+
 /** A ticket with only generated detail (no email, no files). */
 export const SparseTicket: Story = { args: { ticket: wsTickets[3]!, initialTab: 'timeline' } }

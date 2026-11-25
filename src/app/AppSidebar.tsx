@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/organisms'
 import { moduleNav, railFooterModules, railModules, wsCurrentAgent } from '@/mocks'
 import { defaultView, savedViewItems, viewPath } from './nav'
 import { useSavedViews } from './saved-views-context'
+import { useWorkspace } from './workspace-context'
 
 const COLLAPSED_KEY = 'tbt-sidebar-collapsed'
 
@@ -39,6 +40,7 @@ export function AppSidebar({
   const [collapsed, setCollapsed] = useState(initialCollapsed ?? readCollapsed)
   const nav = moduleNav[module] ?? moduleNav.inbox!
   const { views } = useSavedViews()
+  const { newTicket } = useWorkspace()
 
   // Saved views go under Views, and favourites under Favorites too.
   const sections =
@@ -75,7 +77,7 @@ export function AppSidebar({
           module === 'inbox' ? (
             <>
               <IconButton icon="search" label="Search" size="sm" />
-              <IconButton icon="plus" label="New ticket" size="sm" />
+              <IconButton icon="plus" label="New ticket (C)" size="sm" onClick={newTicket} />
             </>
           ) : undefined,
         sections,
