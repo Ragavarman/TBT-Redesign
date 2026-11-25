@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router'
 import { IconButton } from '@/components/atoms'
 import { Sidebar } from '@/components/organisms'
 import { moduleNav, railFooterModules, railModules, wsCurrentAgent } from '@/mocks'
-import { defaultView, viewPath } from './nav'
+import { defaultView, savedViewItems, viewPath } from './nav'
+import { useSavedViews } from './saved-views-context'
 
 const COLLAPSED_KEY = 'tbt-sidebar-collapsed'
 
@@ -37,6 +38,19 @@ export function AppSidebar({
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(initialCollapsed ?? readCollapsed)
   const nav = moduleNav[module] ?? moduleNav.inbox!
+  const { views } = useSavedViews()
+
+  // Saved views go under Views, and favourites under Favorites too.
+  const sections =
+    module !== 'inbox' || views.length === 0
+      ? nav.sections
+      : nav.sections.map((s) =>
+          s.id === 'views'
+            ? { ...s, items: [...s.items, ...savedViewItems(views)] }
+            : s.id === 'favorites'
+              ? { ...s, items: [...s.items, ...savedViewItems(views.filter((v) => v.favorite))] }
+              : s,
+        )
 
   return (
     <Sidebar
@@ -64,7 +78,7 @@ export function AppSidebar({
               <IconButton icon="plus" label="New ticket" size="sm" />
             </>
           ) : undefined,
-        sections: nav.sections,
+        sections,
         activeId: view,
         onSelect: (item) => navigate(viewPath(module, item.id)),
       }}

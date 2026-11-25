@@ -1,5 +1,6 @@
-import { useRef, useState, type ReactNode } from 'react'
-import { Avatar, Button, Checkbox, PriorityGlyph, StatusGlyph } from '@/components/atoms'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { Avatar, Badge, Button, Checkbox, PriorityGlyph, StatusGlyph } from '@/components/atoms'
+import { SlaBadge } from '@/components/molecules'
 import {
   BulkActionBar,
   createDataTableColumns,
@@ -10,6 +11,8 @@ import {
 import { ListPageTemplate } from '@/components/templates'
 import { useHotkeys } from '@/hooks/useHotkeys'
 import { customerLabel, shortAgo, wsCounts, wsTickets } from '@/mocks'
+import type { SavedView } from './ticket-view'
+import { useTicketView } from './useTicketView'
 import {
   formatTicketId,
   TICKET_PRIORITIES,
@@ -38,11 +41,13 @@ function PersonText({ name }: { name?: string }) {
 const col = createDataTableColumns<Ticket>()
 const columns = col.columns([
   col.accessor('id', {
+    id: 'id',
     header: 'ID',
     meta: { width: 72 },
     cell: ({ getValue }) => <span className="tabular-nums">{formatTicketId(getValue())}</span>,
   }),
   col.accessor('subject', {
+    id: 'subject',
     header: 'Subject',
     cell: ({ getValue }) => getValue(),
   }),
@@ -53,6 +58,7 @@ const columns = col.columns([
     cell: ({ getValue }) => <PersonText name={getValue()} />,
   }),
   col.accessor('status', {
+    id: 'status',
     header: 'Status',
     meta: { width: 136 },
     cell: ({ getValue }) => (
@@ -63,6 +69,7 @@ const columns = col.columns([
     ),
   }),
   col.accessor('priority', {
+    id: 'priority',
     header: 'Priority',
     meta: { width: 100 },
     sortFn: (a, b) =>
@@ -81,7 +88,36 @@ const columns = col.columns([
     meta: { width: 128 },
     cell: ({ row }) => <PersonText name={row.original.assignee?.name} />,
   }),
+  col.accessor((r) => r.sla?.state ?? '', {
+    id: 'sla',
+    header: 'SLA',
+    meta: { width: 150 },
+    cell: ({ row }) => {
+      const sla = row.original.sla
+      if (!sla) return <span className="text-muted-foreground">—</span>
+      return sla.state === 'on-track' ? (
+        <span className="text-muted-foreground">{sla.label}</span>
+      ) : (
+        <SlaBadge state={sla.state}>{sla.label}</SlaBadge>
+      )
+    },
+  }),
+  col.accessor((r) => r.tags.join(', '), {
+    id: 'labels',
+    header: 'Labels',
+    meta: { width: 140 },
+    cell: ({ row }) => (
+      <span className="flex gap-1">
+        {row.original.tags.map((t) => (
+          <Badge key={t} variant="outline">
+            {t}
+          </Badge>
+        ))}
+      </span>
+    ),
+  }),
   col.accessor('updatedAt', {
+    id: 'updated',
     header: 'Updated',
     meta: { width: 88 },
     cell: ({ getValue }) => <span className="tabular-nums">{shortAgo(getValue())}</span>,
@@ -94,16 +130,40 @@ export interface TicketsTablePageProps {
   initialSelection?: RowSelectionState
   /** Row click — open the ticket. */
   onOpenTicket?: (id: number) => void
+  onSaveView?: (view: SavedView) => void
+  /** Stories: open a control on load. */
+  initialOpen?: 'filters' | 'display' | 'save'
 }
+
+/** Columns that are always shown; the rest follow Display → Properties. */
+const FIXED = new Set(['subject', 'status'])
 
 export function TicketsTablePage({
   sidebar,
   initialSelection = {},
   onOpenTicket,
+  onSaveView,
+  initialOpen,
 }: TicketsTablePageProps) {
+  const view = useTicketView({
+    tickets: wsTickets,
+    layout: 'table',
+    title: 'All tickets',
+    initialDisplay: { props: ['id', 'customer', 'priority', 'assignee', 'updated'] },
+    onSaveView,
+    initialOpen,
+  })
+  const visibleColumns = useMemo(
+    () =>
+      columns.filter((c) => {
+        const id = (c as { id?: string }).id ?? ''
+        return FIXED.has(id) || view.display.props.includes(id as never)
+      }),
+    [view.display.props],
+  )
   const [selection, setSelection] = useState<RowSelectionState>(initialSelection)
   const count = Object.values(selection).filter(Boolean).length
-  const all = count === wsTickets.length
+  const all = count === view.shown.length
   const table = useRef<HTMLDivElement>(null)
 
   // J / K move between rows (Enter opens the focused one), Esc clears the selection.
@@ -130,12 +190,7 @@ export function TicketsTablePage({
           count={wsCounts.all}
           actions={
             <>
-              <Button variant="ghost" leadingIcon="filter" shortcut="F">
-                Filters
-              </Button>
-              <Button variant="ghost" leadingIcon="display" shortcut="V">
-                Display
-              </Button>
+              {view.controls}
               <Button leadingIcon="plus">New ticket</Button>
             </>
           }
@@ -153,7 +208,7 @@ export function TicketsTablePage({
                 checked={all ? true : 'indeterminate'}
                 onCheckedChange={() =>
                   setSelection(
-                    all ? {} : Object.fromEntries(wsTickets.map((t) => [String(t.id), true])),
+                    all ? {} : Object.fromEntries(view.shown.map((t) => [String(t.id), true])),
                   )
                 }
                 className="me-2"
@@ -184,8 +239,8 @@ export function TicketsTablePage({
           appearance="flush"
           label="All tickets"
           itemLabel="tickets"
-          columns={columns}
-          data={wsTickets}
+          columns={visibleColumns}
+          data={view.shown}
           getRowId={(t) => String(t.id)}
           selectable
           rowSelection={selection}
@@ -194,6 +249,7 @@ export function TicketsTablePage({
           onRowClick={onOpenTicket && ((t) => onOpenTicket(t.id))}
         />
       </div>
+      {view.saveDialog}
     </ListPageTemplate>
   )
 }

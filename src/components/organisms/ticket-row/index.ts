@@ -1,1 +1,1 @@
-export { TicketRow, type TicketRowProps } from './TicketRow'
+export { TicketRow, type TicketRowProperty, type TicketRowProps } from './TicketRow'
