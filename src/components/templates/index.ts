@@ -3,5 +3,6 @@
 export * from './app-shell'
 export * from './dashboard'
 export * from './list-page'
+export * from './profile'
 export * from './settings'
 export * from './ticket-workspace'

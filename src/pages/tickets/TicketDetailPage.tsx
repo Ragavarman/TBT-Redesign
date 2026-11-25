@@ -546,7 +546,16 @@ function DetailsCard({
   )
 }
 
-function CustomerCard({ ticket, detail }: { ticket: Ticket; detail: TicketDetail }) {
+function CustomerCard({
+  ticket,
+  detail,
+  onOpen,
+}: {
+  ticket: Ticket
+  detail: TicketDetail
+  /** Open the customer's profile. */
+  onOpen?: () => void
+}) {
   const c = ticket.requester
   return (
     <section
@@ -556,7 +565,19 @@ function CustomerCard({ ticket, detail }: { ticket: Ticket; detail: TicketDetail
       <div className="flex items-center gap-3 pb-2">
         <Avatar name={c.name} src={c.avatarUrl} size="md" aria-hidden />
         <div className="flex min-w-0 flex-col">
-          <h2 className="truncate text-title text-foreground">{c.name}</h2>
+          <h2 className="truncate text-title text-foreground">
+            {onOpen ? (
+              <button
+                type="button"
+                onClick={onOpen}
+                className="cursor-pointer rounded-xs text-left outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {c.name}
+              </button>
+            ) : (
+              c.name
+            )}
+          </h2>
           <p className="truncate text-small text-muted-foreground">{c.phone ?? c.email}</p>
         </div>
       </div>
@@ -596,6 +617,8 @@ export interface TicketDetailPageProps {
   initialOverlay?: 'merge' | 'invoice'
   onBack: () => void
   onOpenTicket: (id: number) => void
+  /** Customer card name → their profile. */
+  onOpenCustomer?: () => void
 }
 
 type Picker = 'status' | 'assignee' | 'snooze'
@@ -632,6 +655,7 @@ export function TicketDetailPage({
   initialOverlay,
   onBack,
   onOpenTicket,
+  onOpenCustomer,
 }: TicketDetailPageProps) {
   const baseDetail = wsTicketDetail(ticket.id) ?? wsGeneratedDetail(ticket)
   const me = wsCurrentAgent
@@ -1208,7 +1232,7 @@ export function TicketDetailPage({
                 />
               }
             />
-            <CustomerCard ticket={ticket} detail={detail} />
+            <CustomerCard ticket={ticket} detail={detail} onOpen={onOpenCustomer} />
           </>
         }
       >

@@ -8,9 +8,11 @@ import { TicketsListPage } from '@/pages/tickets/TicketsListPage'
 import { TicketsTablePage } from '@/pages/tickets/TicketsTablePage'
 import type { SavedView } from '@/pages/tickets/ticket-view'
 import { AppSidebar } from './AppSidebar'
+import { CustomerRoute, CustomersViewRoute } from './CustomerRoutes'
 import {
   defaultView,
   findNavItem,
+  isCustomerListView,
   parseTicketId,
   ticketPath,
   ticketsForView,
@@ -88,6 +90,8 @@ function ViewRoute() {
     return <Navigate to="/" replace />
   }
 
+  if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+
   const item = findNavItem(module, view)
   if (!item) return <Navigate to="/" replace />
   return (
@@ -123,6 +127,7 @@ function TicketRoute() {
       ticket={ticket}
       onBack={() => navigate(viewPath('inbox', view))}
       onOpenTicket={(next) => navigate(ticketPath(view, next))}
+      onOpenCustomer={() => navigate(`/customers/all/${ticket.requester.id}`)}
     />
   )
 }
@@ -133,6 +138,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Navigate to="/inbox/all" replace /> },
       { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
+      { path: '/customers/:view/:customerId', element: <CustomerRoute /> },
       { path: '/:module/:view?', element: <ViewRoute /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],

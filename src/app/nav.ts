@@ -74,3 +74,7 @@ export function findNavItem(module: string, view: string): NavItem | undefined {
   }
   return undefined
 }
+
+/** Customer views that list customers; the Browse items (Companies…) come in later steps. */
+const CUSTOMER_LIST_VIEWS = new Set(['all', 'review', 'vip', 'frequent'])
+export const isCustomerListView = (view: string) => CUSTOMER_LIST_VIEWS.has(view)

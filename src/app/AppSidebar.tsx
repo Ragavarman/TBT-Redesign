@@ -77,7 +77,12 @@ export function AppSidebar({
           module === 'inbox' ? (
             <>
               <IconButton icon="search" label="Search" size="sm" />
-              <IconButton icon="plus" label="New ticket (C)" size="sm" onClick={newTicket} />
+              <IconButton
+                icon="plus"
+                label="New ticket (C)"
+                size="sm"
+                onClick={() => newTicket()}
+              />
             </>
           ) : undefined,
         sections,

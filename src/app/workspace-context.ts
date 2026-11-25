@@ -11,8 +11,8 @@ export interface WorkspaceValue {
   addTicket: (t: Ticket) => void
   /** Edit tickets (bulk actions). Pass the previous values back to undo. */
   updateTickets: (changes: TicketChange[]) => void
-  /** Open the New ticket dialog (C, or any "New ticket" button). */
-  newTicket: () => void
+  /** Open the New ticket dialog (C, or any "New ticket" button), optionally for a customer. */
+  newTicket: (customerId?: string) => void
 }
 
 export const WorkspaceContext = createContext<WorkspaceValue>({

@@ -61,8 +61,9 @@ export function WorkspaceRoot() {
     [created, edits],
   )
 
-  function newTicket(customerId?: string) {
-    setPrefill(customerId)
+  function newTicket(customerId?: unknown) {
+    // buttons pass their click event straight through — only a string is a customer
+    setPrefill(typeof customerId === 'string' ? customerId : undefined)
     setOpen(true)
   }
 
@@ -76,7 +77,7 @@ export function WorkspaceRoot() {
           for (const { id, patch } of changes) next[id] = { ...next[id], ...patch }
           return next
         }),
-      newTicket: () => newTicket(),
+      newTicket: (customerId) => newTicket(customerId),
     }),
     [tickets],
   )
