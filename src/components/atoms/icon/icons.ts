@@ -122,6 +122,6 @@ export const ICONS = {
 export type IconName = keyof typeof ICONS
 export const ICON_NAMES = Object.keys(ICONS) as IconName[]
 
-/** Sizes from Figma: 12 dense meta · 14 menus · 16 default · 20 empty states · 24 large. */
-export const ICON_SIZES = [12, 14, 16, 20, 24] as const
+/** Sizes: 12 dense meta · 14 menus · 16 default · 18 navigation (rail, sidebar) · 20 empty states · 24 large. */
+export const ICON_SIZES = [12, 14, 16, 18, 20, 24] as const
 export type IconSize = (typeof ICON_SIZES)[number]
