@@ -41,9 +41,9 @@ export function RailItem({
       aria-current={active ? 'page' : undefined}
       {...(!asChild && { type: 'button' as const })}
       className={cn(
-        // icon-only square: Body strong 14/20 + --py → 36×36, 16px icon centred in the 1lh slot
+        // icon-only square: Body strong 14/20 + --py → 36×36, 24px icon centred (overhangs the 20px slot by 2px a side)
         'relative optical-square inline-flex shrink-0 items-center justify-center rounded-md border border-transparent',
-        'text-body-strong [--bw:1px] [--icon:16px] [--lh:1.4286] [--py:calc(8em/14)]',
+        'text-body-strong [--bw:1px] [--icon:24px] [--lh:1.4286] [--py:calc(8em/14)]',
         'text-muted-foreground transition-colors duration-150 outline-none',
         'hover:bg-accent hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:border-border data-active:bg-card data-active:text-foreground',
@@ -51,7 +51,7 @@ export function RailItem({
       )}
       {...props}
     >
-      {typeof icon === 'string' ? <Icon name={icon} size={16} /> : <Icon icon={icon} size={16} />}
+      {typeof icon === 'string' ? <Icon name={icon} size={24} /> : <Icon icon={icon} size={24} />}
       {asChild && children && <Slot.Slottable>{children}</Slot.Slottable>}
       {dot && (
         <span

@@ -14,7 +14,7 @@ export interface SidebarItemProps extends Omit<ComponentProps<'button'>, 'childr
   count?: ReactNode
   /** Primary dot before the count — the view has unread activity. */
   unread?: boolean
-  /** 0 — module (16px icon) · 1 — nested saved view (indented, 14px icon). */
+  /** 0 — module (24px icon) · 1 — nested saved view (indented, 14px icon). */
   level?: 0 | 1
   /** Current page. Sets aria-current="page" and the sidebar-accent fill. */
   active?: boolean
@@ -23,7 +23,7 @@ export interface SidebarItemProps extends Omit<ComponentProps<'button'>, 'childr
   children?: ReactElement
 }
 
-function renderIcon(icon: SidebarItemProps['icon'], size: 14 | 16) {
+function renderIcon(icon: SidebarItemProps['icon'], size: 14 | 24) {
   if (icon === undefined) return null
   if (isValidElement(icon)) return icon
   return typeof icon === 'string' ? (
@@ -59,8 +59,11 @@ export function SidebarItem({
         'group/sidebar-item optical-edges flex w-full items-center rounded-sm optical text-left text-sidebar-foreground outline-none',
         FIELD.md,
         'transition-colors duration-150',
-        // level 1 (saved views) is indented by one icon column + gap
-        level === 0 ? '[--icon:16px]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:14px]',
+        // level 0: the 24px icon overhangs the 20px slot; -2px block margin keeps the row 32px.
+        // level 1 (saved views) is indented so its icon lines up under the parent's label.
+        level === 0
+          ? '[--icon:24px] [&>svg]:-my-0.5'
+          : 'ps-[calc(var(--px)+1.5rem)]! [--icon:14px]',
         'hover:bg-muted focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:bg-sidebar-accent data-active:text-body-strong data-active:text-sidebar-accent-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
@@ -71,7 +74,7 @@ export function SidebarItem({
       )}
       {...props}
     >
-      {renderIcon(icon, level === 0 ? 16 : 14)}
+      {renderIcon(icon, level === 0 ? 24 : 14)}
       {asChild && children ? (
         <Slot.Slottable>{children}</Slot.Slottable>
       ) : (
