@@ -41,7 +41,7 @@ export function Tooltip({
       <UiTooltip {...props}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent side={side} align={align}>
-          {content}
+          <span>{content}</span>
           {shortcut && (
             <Kbd aria-hidden className="opacity-85">
               {shortcut}

@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { CAPTION } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 
 export interface KbdProps extends ComponentProps<'kbd'> {
@@ -9,13 +10,21 @@ export interface KbdProps extends ComponentProps<'kbd'> {
   tone?: 'default' | 'inverse'
 }
 
-/** Keyboard shortcut key (Figma 05 · Kbd): 18px, radius 4, Caption text. */
+/**
+ * Keyboard shortcut key (Figma 05 · Kbd): Caption text, radius 4, 18px tall.
+ * Optical padding; min-width = height so a single key is square and longer ones grow.
+ * `data-edge` + --edge let a parent (Button, Input) pull it to the edge like an icon.
+ */
 export function Kbd({ tone = 'default', className, ...props }: KbdProps) {
   return (
     <kbd
       data-slot="kbd"
+      data-edge
       className={cn(
-        'inline-flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-xs border px-1 font-sans text-caption select-none',
+        'optical [--bw:1px]',
+        CAPTION.xs,
+        'min-w-[calc(var(--slot)+2*var(--py))] [--edge:calc(var(--slot)+2*var(--py))]',
+        'inline-flex shrink-0 items-center justify-center rounded-xs border font-sans select-none',
         tone === 'default' && 'border-input bg-card text-muted-foreground',
         tone === 'inverse' && 'border-current/40 bg-transparent text-current opacity-90',
         className,

@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react'
 import { StatusGlyph } from '@/components/atoms'
+import { CAPTION } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 import { TICKET_STATUS_LABEL, type TicketStatus } from '@/types'
 
@@ -46,15 +47,17 @@ export function TicketStatusBadge({
       data-slot="ticket-status"
       data-status={status}
       className={cn(
-        'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap',
-        variant === 'label' && 'text-small text-foreground',
-        variant === 'pill' && cn('h-5.5 rounded-full pr-2 pl-1.5 text-caption', PILL[status]),
+        'inline-flex shrink-0 items-center whitespace-nowrap',
+        variant === 'label' && 'gap-1.5 text-small text-foreground',
+        // optical padding (Caption + --py → 22px); the 14px glyph is pulled to the edge
+        variant === 'pill' &&
+          cn('optical-edges rounded-full optical [--icon:14px]', CAPTION.md, PILL[status]),
         className,
       )}
       {...props}
     >
       <StatusGlyph status={status} label={null} />
-      {label}
+      <span>{label}</span>
     </span>
   )
 }

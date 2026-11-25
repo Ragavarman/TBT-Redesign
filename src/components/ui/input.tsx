@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { FIELD } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 
 /**
@@ -31,8 +32,9 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
       data-slot="input"
       className={cn(
         fieldShell,
-        'h-control-md px-3',
-        'file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-label file:text-foreground',
+        'optical [--bw:1px]',
+        FIELD.md,
+        'file:inline-flex file:h-(--slot) file:border-0 file:bg-transparent file:text-label file:text-foreground',
         className,
       )}
       {...props}

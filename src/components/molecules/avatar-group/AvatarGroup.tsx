@@ -15,11 +15,14 @@ export interface AvatarGroupProps extends ComponentProps<'div'> {
   size?: AvatarSize
 }
 
+/** Overflow chip uses the avatar scale: same box, count at 40 % of it. */
 const CHIP = {
-  xs: 'size-5 text-[10px]',
-  sm: 'size-6 text-[10px]',
-  md: 'size-8 text-caption',
-  lg: 'size-10 text-label',
+  xs: '[--avatar:20px]',
+  sm: '[--avatar:24px]',
+  md: '[--avatar:32px]',
+  lg: '[--avatar:40px]',
+  xl: '[--avatar:48px]',
+  '2xl': '[--avatar:64px]',
 } as const
 
 /**
@@ -51,17 +54,14 @@ export function AvatarGroup({
           src={p.src}
           size={size}
           aria-hidden
-          className={cn(
-            'ring-2 ring-card',
-            (size === 'xs' || size === 'sm') && '[&_[data-slot=avatar-fallback]]:text-[10px]',
-          )}
+          className="ring-2 ring-card"
         />
       ))}
       {rest > 0 && (
         <span
           aria-hidden
           className={cn(
-            'relative flex shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-card',
+            'relative flex size-(--avatar) shrink-0 items-center justify-center rounded-full bg-muted text-[length:round(calc(var(--avatar)*0.4),1px)] leading-none font-medium text-muted-foreground ring-2 ring-card',
             CHIP[size],
           )}
         >

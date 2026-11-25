@@ -40,9 +40,11 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          'z-50 inline-flex w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin) items-center gap-1.5',
-          'rounded-sm bg-foreground px-2 py-1 text-caption text-background',
-          'has-data-[slot=kbd]:pr-1',
+          'z-50 inline-flex w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin) items-center',
+          // optical padding: Caption + --py → 24px. The Radix arrow is the last child, so the
+          // Kbd is pulled to the edge explicitly rather than via :last-child.
+          'optical-edges rounded-sm bg-foreground optical text-caption text-background [--lh:1.3333] [--py:calc(4em/12)]',
+          '[&>[data-slot=kbd]]:me-[calc(var(--e-py)-var(--e-px))]',
           floatingMotion,
           'data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95',
           className,

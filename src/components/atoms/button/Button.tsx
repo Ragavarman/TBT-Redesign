@@ -82,7 +82,12 @@ export function Button({
       {...props}
     >
       {loading ? <Spinner size={SPINNER[size]} label={null} /> : renderIcon(leadingIcon, size)}
-      <Slot.Slottable>{children}</Slot.Slottable>
+      {asChild ? (
+        <Slot.Slottable>{children}</Slot.Slottable>
+      ) : (
+        // label in an element so optical-edges can tell icons from text (CSS can't see text nodes)
+        <span data-slot="label">{children}</span>
+      )}
       {renderIcon(trailingIcon, size)}
       {shortcut && <Kbd tone={solid ? 'inverse' : 'default'}>{shortcut}</Kbd>}
     </UiButton>

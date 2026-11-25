@@ -7,7 +7,14 @@ function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   return (
     <textarea
       data-slot="textarea"
-      className={cn(fieldShell, 'flex field-sizing-content min-h-20 resize-y px-3 py-2', className)}
+      className={cn(
+        fieldShell,
+        // optical padding (8px top, ≈13px side); min height = 3 lines
+        'flex field-sizing-content resize-y optical [--bw:1px]',
+        'text-body [--lh:1.4286] [--py:calc(8em/14)]',
+        'min-h-[calc(3*var(--slot)+2*var(--py))]',
+        className,
+      )}
       {...props}
     />
   )

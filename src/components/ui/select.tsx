@@ -2,6 +2,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Select as SelectPrimitive } from 'radix-ui'
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react'
+import { FIELD } from '@/lib/optical'
 import { fieldBase } from './input'
 import { menuContent, menuItem, menuLabel, menuSeparator } from './menu-styles'
 
@@ -35,15 +36,16 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         fieldBase,
-        'group/select flex items-center justify-between gap-2 pr-2 pl-3 text-left whitespace-nowrap',
-        'data-[size=default]:h-control-md data-[size=sm]:h-control-sm data-[size=sm]:text-small',
+        // optical padding: same height as Input / Button of the same size; chevron at the edge
+        'group/select optical-edges flex items-center justify-between optical text-left whitespace-nowrap [--bw:1px] [--icon:14px]',
+        size === 'sm' ? FIELD.sm : FIELD.md,
         'focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring',
         'data-[state=open]:border-ring data-[state=open]:ring-1 data-[state=open]:ring-ring',
         'aria-invalid:border-destructive aria-invalid:hover:border-destructive',
         'disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50 disabled:hover:border-input',
         'data-placeholder:text-muted-foreground',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2',
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-(--icon)",
         className,
       )}
       {...props}
@@ -109,11 +111,12 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
-      className={cn(menuItem, 'pr-8', className)}
+      // room for the check indicator: --px + icon + gap
+      className={cn(menuItem, 'pe-[calc(var(--px)+var(--icon)+var(--py))]!', className)}
       {...props}
     >
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-      <span className="absolute right-2 flex size-3.5 items-center justify-center">
+      <span className="absolute end-(--px) flex size-(--icon) items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="text-foreground" strokeWidth={1.5} absoluteStrokeWidth />
         </SelectPrimitive.ItemIndicator>

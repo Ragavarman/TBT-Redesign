@@ -5,13 +5,19 @@ import { Icon } from '../icon'
 import { PresenceDot, type Presence } from '../presence-dot'
 import { initialsOf } from './initials'
 
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg'
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
+/**
+ * Size scale. --avatar drives the box (1:1) and the initials (40 % of the box).
+ * Inside a chip / button, override with `[--avatar:var(--e-slot)]` to make it 1lh.
+ */
 const SIZE = {
-  xs: { box: 'size-5', text: 'text-[10px] leading-none font-medium', icon: 12 },
-  sm: { box: 'size-6', text: 'text-caption', icon: 12 },
-  md: { box: 'size-8', text: 'text-label', icon: 16 },
-  lg: { box: 'size-10', text: 'text-body-strong', icon: 20 },
+  xs: { box: '[--avatar:20px]', icon: 12 },
+  sm: { box: '[--avatar:24px]', icon: 12 },
+  md: { box: '[--avatar:32px]', icon: 16 },
+  lg: { box: '[--avatar:40px]', icon: 20 },
+  xl: { box: '[--avatar:48px]', icon: 24 },
+  '2xl': { box: '[--avatar:64px]', icon: 24 },
 } as const
 
 export interface AvatarProps extends Omit<ComponentProps<typeof UiAvatar>, 'size' | 'children'> {
@@ -21,13 +27,17 @@ export interface AvatarProps extends Omit<ComponentProps<typeof UiAvatar>, 'size
   src?: string
   /** Override the derived initials. */
   initials?: string
-  /** xs 20 · sm 24 · md 32 (default) · lg 40. */
+  /** xs 20 · sm 24 · md 32 (default) · lg 40 · xl 48 · 2xl 64. */
   size?: AvatarSize
   /** Availability dot at the bottom-right. */
   presence?: Presence
 }
 
-/** Person avatar (Figma 08 · Avatar): photo, initials or user icon, optional presence dot. */
+/**
+ * Person avatar (Figma 08 · Avatar): photo, initials or user icon, optional presence dot.
+ * Always 1:1 and round; initials are 40 % of the size, centred on the cap height
+ * (Inter's cap height is centred in its line box, and `text-box` trims to it where supported).
+ */
 export function Avatar({
   name,
   src,
@@ -43,11 +53,14 @@ export function Avatar({
     <UiAvatar
       role="img"
       aria-label={name}
-      className={cn(s.box, presence && 'overflow-visible', className)}
+      className={cn(s.box, 'size-(--avatar)', presence && 'overflow-visible', className)}
       {...props}
     >
       {src && <AvatarImage src={src} alt="" />}
-      <AvatarFallback className={s.text} aria-hidden>
+      <AvatarFallback
+        className="text-[length:round(calc(var(--avatar)*0.4),1px)] leading-none font-medium [text-box:trim-both_cap_alphabetic]"
+        aria-hidden
+      >
         {text || <Icon name="user" size={s.icon} className="text-muted-foreground" />}
       </AvatarFallback>
       {presence && (

@@ -1,3 +1,4 @@
+import { CAPTION, FIELD } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 
 /**
@@ -24,19 +25,21 @@ export const floatingSurface = cn(
 /** Menu content panel: 4px padding, min width 208. */
 export const menuContent = cn(floatingSurface, 'min-w-52 overflow-x-hidden overflow-y-auto p-1')
 
-/** Menu item row: 32px, radius 4, px 8, gap 8, Body text, 14px muted icons, accent on hover/focus. */
+/** Menu item row: 32px (optical: Body + --py), radius 4, 14px muted icons pulled to the edge. */
 export const menuItem = cn(
-  'relative flex h-8 w-full cursor-pointer items-center gap-2 rounded-xs px-2 text-body text-popover-foreground outline-none select-none',
+  'relative flex w-full cursor-pointer items-center rounded-xs text-popover-foreground outline-none select-none',
+  'optical-edges optical [--icon:14px]',
+  FIELD.md,
   'focus:bg-accent data-highlighted:bg-accent',
   'data-disabled:pointer-events-none data-disabled:opacity-50',
-  "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 [&_svg:not([class*='text-'])]:text-muted-foreground",
+  "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-(--icon) [&_svg:not([class*='text-'])]:text-muted-foreground",
   // destructive rows: label + icon in destructive, soft tint on hover
   'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive-soft data-[variant=destructive]:data-highlighted:bg-destructive-soft',
   'data-[variant=destructive]:[&_svg]:text-destructive',
 )
 
-/** Section label inside a menu: 28px, Caption, muted. */
-export const menuLabel = 'flex h-7 items-center px-2 text-caption text-muted-foreground'
+/** Section label inside a menu: 28px (optical: Caption + --py), muted. */
+export const menuLabel = cn('flex items-center optical text-muted-foreground', CAPTION.lg)
 
 /** 1px divider with 4px above and below (9px total, as in Figma). */
 export const menuSeparator = 'my-1 h-px bg-border'

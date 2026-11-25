@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type ComponentProps, type Ref } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { fieldBase } from '@/components/ui/input'
+import { FIELD } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 import { Icon, type IconName } from '../icon'
 import { Kbd } from '../kbd'
@@ -85,9 +86,9 @@ export function Input({
       className={cn(
         // same shape as ui/input; states come from the inner <input> via has-[] and data-*
         fieldBase,
-        'flex items-center gap-2 pr-2',
-        icon ? 'pl-2' : 'pl-3',
-        size === 'md' ? 'h-control-md text-body' : 'h-control-sm text-small',
+        // optical padding: type + --py set the height (32 / 28); icons, Kbd and clear sit at the edge
+        'optical-edges flex items-center optical [--bw:1px] [--icon:14px]',
+        FIELD[size],
         'has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-1 has-[input:focus-visible]:ring-ring',
         'data-invalid:border-destructive data-invalid:hover:border-destructive',
         'data-invalid:has-[input:focus-visible]:border-destructive data-invalid:has-[input:focus-visible]:ring-destructive',
@@ -122,7 +123,7 @@ export function Input({
         readOnly={readOnly}
         aria-invalid={invalid || undefined}
         className={cn(
-          'h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed',
+          'h-(--slot) min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed',
           '[&::-webkit-search-cancel-button]:appearance-none',
           className,
         )}
@@ -134,7 +135,8 @@ export function Input({
           type="button"
           aria-label="Clear"
           onClick={clear}
-          className="-mr-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          data-edge
+          className="inline-flex size-(--e-slot) shrink-0 items-center justify-center rounded-xs text-muted-foreground outline-none [--edge:var(--e-slot)] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Icon name="x" size={14} />
         </button>

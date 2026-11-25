@@ -39,11 +39,11 @@ export interface SelectProps extends Omit<ComponentProps<typeof UiSelect>, 'chil
   className?: string
 }
 
-const renderIcon = (icon?: IconName | LucideIcon) =>
+const renderIcon = (icon?: IconName | LucideIcon, className?: string) =>
   icon === undefined ? null : typeof icon === 'string' ? (
-    <Icon name={icon} size={14} />
+    <Icon name={icon} size={14} className={className} />
   ) : (
-    <Icon icon={icon} size={14} />
+    <Icon icon={icon} size={14} className={className} />
   )
 
 /** One option. Accepts an `icon` before the label. */
@@ -94,7 +94,8 @@ export function Select({
         aria-describedby={ariaDescribedby}
         className={className ?? 'w-full'}
       >
-        {leadingIcon && <span className="text-foreground">{renderIcon(leadingIcon)}</span>}
+        {/* direct child (not wrapped) so optical-edges pulls it to the edge */}
+        {leadingIcon && renderIcon(leadingIcon, 'text-foreground')}
         <span className="min-w-0 flex-1 truncate">
           <SelectValue placeholder={placeholder} />
         </span>

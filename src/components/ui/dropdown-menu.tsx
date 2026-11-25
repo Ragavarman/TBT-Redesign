@@ -82,7 +82,7 @@ function DropdownMenuCheckboxItem({
       checked={checked}
       {...props}
     >
-      <span className="flex size-3.5 shrink-0 items-center justify-center">
+      <span data-edge className="flex size-(--icon) shrink-0 items-center justify-center">
         <DropdownMenuPrimitive.ItemIndicator>
           <CheckIcon className="text-foreground" strokeWidth={1.5} absoluteStrokeWidth />
         </DropdownMenuPrimitive.ItemIndicator>
@@ -109,7 +109,7 @@ function DropdownMenuRadioItem({
       className={cn(menuItem, className)}
       {...props}
     >
-      <span className="flex size-3.5 shrink-0 items-center justify-center">
+      <span data-edge className="flex size-(--icon) shrink-0 items-center justify-center">
         <DropdownMenuPrimitive.ItemIndicator>
           <span className="block size-1.5 rounded-full bg-foreground" />
         </DropdownMenuPrimitive.ItemIndicator>

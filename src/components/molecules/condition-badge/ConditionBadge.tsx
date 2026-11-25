@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { CAPTION } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 import { ASSET_CONDITION_LABEL, type AssetCondition } from '@/types'
 
@@ -19,14 +20,16 @@ export function ConditionBadge({ condition, className, ...props }: ConditionBadg
       data-slot="condition-badge"
       data-condition={condition}
       className={cn(
-        'inline-flex h-5.5 shrink-0 items-center gap-1 rounded-full pr-2 pl-1.5 text-caption whitespace-nowrap',
+        // optical padding (Caption + --py → 22px); the dot is pulled to the edge
+        'optical-edges inline-flex shrink-0 items-center rounded-full optical whitespace-nowrap',
+        CAPTION.md,
         TONE[condition],
         className,
       )}
       {...props}
     >
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
-      {ASSET_CONDITION_LABEL[condition]}
+      <span aria-hidden data-edge className="size-1.5 rounded-full bg-current [--edge:6px]" />
+      <span>{ASSET_CONDITION_LABEL[condition]}</span>
     </span>
   )
 }

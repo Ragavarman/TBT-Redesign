@@ -53,17 +53,22 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        'relative inline-flex shrink-0 items-center justify-center gap-1.5 text-label whitespace-nowrap text-muted-foreground outline-none',
+        'relative inline-flex shrink-0 items-center justify-center whitespace-nowrap text-muted-foreground outline-none',
+        // optical padding: Label 13/18 + --py per variant (pill 28px, underline 36px)
+        'optical-edges optical text-label [--icon:14px] [--lh:1.3846]',
         'transition-[color,background-color,box-shadow] duration-150',
         'hover:text-foreground data-[state=active]:text-foreground',
         'focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring',
         'disabled:pointer-events-none disabled:opacity-50',
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-(--icon)",
         // pill
-        'group-data-[variant=pill]/tabs-list:h-7 group-data-[variant=pill]/tabs-list:rounded-sm group-data-[variant=pill]/tabs-list:px-2.5',
+        'group-data-[variant=pill]/tabs-list:rounded-sm group-data-[variant=pill]/tabs-list:[--py:calc(5em/13)]',
         'group-data-[variant=pill]/tabs-list:data-[state=active]:bg-accent',
         // underline — the 2px bar sits on the list's bottom border
-        'group-data-[variant=underline]/tabs-list:-mb-px group-data-[variant=underline]/tabs-list:h-9 group-data-[variant=underline]/tabs-list:px-0.5',
+        // text aligns with the page edge, so only a hairline of side padding (for the focus ring);
+        // the 2px indicator is taken out of the bottom padding, so height stays 1lh + 2 × --py
+        'group-data-[variant=underline]/tabs-list:-mb-px group-data-[variant=underline]/tabs-list:[--px:0.15em] group-data-[variant=underline]/tabs-list:[--py:calc(9em/13)]',
+        'group-data-[variant=underline]/tabs-list:pb-[calc(var(--py)-2px)]!',
         'group-data-[variant=underline]/tabs-list:border-b-2 group-data-[variant=underline]/tabs-list:border-transparent',
         'group-data-[variant=underline]/tabs-list:data-[state=active]:border-foreground',
         className,

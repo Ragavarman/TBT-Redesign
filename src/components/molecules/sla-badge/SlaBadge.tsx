@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { Icon } from '@/components/atoms'
+import { CAPTION } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 import { SLA_STATE_LABEL, type SlaState } from '@/types'
 
@@ -22,7 +23,9 @@ export function SlaBadge({ state, children, className, ...props }: SlaBadgeProps
       data-slot="sla-badge"
       data-state={state}
       className={cn(
-        'inline-flex h-5.5 shrink-0 items-center gap-1 rounded-full pr-2 pl-1.5 text-caption whitespace-nowrap',
+        // optical padding (Caption + --py → 22px); clock pulled to the edge
+        'optical-edges inline-flex shrink-0 items-center rounded-full optical whitespace-nowrap [--icon:12px]',
+        CAPTION.md,
         TONE[state],
         className,
       )}
@@ -30,7 +33,7 @@ export function SlaBadge({ state, children, className, ...props }: SlaBadgeProps
     >
       <Icon name="clock" size={12} />
       <span className="sr-only">SLA {SLA_STATE_LABEL[state].toLowerCase()}: </span>
-      {children}
+      <span>{children}</span>
     </span>
   )
 }

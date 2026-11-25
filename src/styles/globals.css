@@ -83,6 +83,107 @@
 :root {
   /* shadcn components reference --radius; Figma radius/lg = 10px. */
   --radius: 0.625rem;
+  /* Inter cap height ÷ em (capHeight 1490 / unitsPerEm 2048). Fallback for browsers without `cap`. */
+  --cap-ratio: 0.727;
+}
+
+/* ── Optical padding ──────────────────────────────────────────────────────────
+ * Padding is measured to the visible text (cap height), not the line box.
+ * A component size sets ONLY font-size + line-height (a text-* token), --py (in em)
+ * and --lh (unitless line-height, for the fallback). Everything else is derived:
+ *
+ *   --px   = --py + (1lh − 1cap) / 2      optical horizontal padding
+ *   --slot = 1lh                          icon / avatar / kbd slot
+ *   height = 1lh + 2 × --py               (borders are inside: padding = token − --bw)
+ *
+ * Registered as <length> so they compute once on the component and children inherit
+ * absolute values — a Kbd or Avatar inside a Button doesn't re-resolve em/lh/cap
+ * against its own smaller font.
+ */
+@property --py {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --px {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --slot {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-py {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-px {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-slot {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/** Optical padding box. Pair with a text-* token, [--py:…] and [--lh:…]; [--bw:1px] if bordered. */
+@utility optical {
+  --slot: 1lh;
+  --px: calc(var(--py) + (1lh - 1cap) / 2);
+  padding-block: max(0px, calc(var(--py) - var(--bw, 0px)));
+  padding-inline: max(0px, calc(var(--px) - var(--bw, 0px)));
+
+  @supports not ((height: 1lh) and (height: 1cap)) {
+    --slot: calc(var(--lh, 1.4) * 1em);
+    --px: calc(var(--py) + (var(--lh, 1.4) * 1em - var(--cap-ratio) * 1em) / 2);
+  }
+}
+
+/**
+ * Leading / trailing visuals (svg icons, or any [data-edge] element: avatar, kbd, dot, clear
+ * button) are pulled toward the edge so their visible side gap equals their vertical gap.
+ * Their size is --edge (default --icon, default the slot). Label text must be in an element
+ * (CSS can't see text nodes), so a lone icon + text never counts as :only-child.
+ */
+@utility optical-edges {
+  --e-py: var(--py);
+  --e-px: var(--px);
+  --e-slot: var(--slot);
+  gap: var(--py);
+
+  & > :is(svg, [data-edge]):first-child:not(:only-child) {
+    margin-inline-start: calc(
+      var(--e-py) + (var(--e-slot) - var(--edge, var(--icon, var(--e-slot)))) / 2 - var(--e-px)
+    );
+  }
+  & > :is(svg, [data-edge]):last-child:not(:only-child) {
+    margin-inline-end: calc(
+      var(--e-py) + (var(--e-slot) - var(--edge, var(--icon, var(--e-slot)))) / 2 - var(--e-px)
+    );
+  }
+}
+
+/**
+ * Icon-only control: padding --py on all sides around a 1lh slot → width === height, always.
+ * Self-contained — use INSTEAD of `optical`, not with it.
+ */
+@utility optical-square {
+  --slot: 1lh;
+  --e-slot: var(--slot);
+  padding: max(0px, calc(var(--py) - var(--bw, 0px)));
+
+  @supports not (height: 1lh) {
+    --slot: calc(var(--lh, 1.4) * 1em);
+  }
+
+  & > svg {
+    margin: calc((var(--e-slot) - var(--icon, var(--e-slot))) / 2);
+  }
 }
 
 @layer base {

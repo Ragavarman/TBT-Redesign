@@ -39,7 +39,8 @@ export function TabsTrigger({ icon, count, children, ...props }: TabsTriggerProp
         ) : (
           <Icon icon={icon} size={14} />
         ))}
-      {children}
+      {/* label in an element so optical-edges can tell the icon from text */}
+      <span>{children}</span>
       {count !== undefined && <span className="text-small text-muted-foreground">{count}</span>}
     </UiTabsTrigger>
   )
