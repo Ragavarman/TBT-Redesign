@@ -14,7 +14,7 @@ export interface SidebarItemProps extends Omit<ComponentProps<'button'>, 'childr
   count?: ReactNode
   /** Primary dot before the count — the view has unread activity. */
   unread?: boolean
-  /** 0 — module (18px icon) · 1 — nested saved view (indented, 14px icon). */
+  /** 0 — module (18px icon) · 1 — nested saved view (indented, 16px icon). */
   level?: 0 | 1
   /** Current page. Sets aria-current="page" and the sidebar-accent fill. */
   active?: boolean
@@ -23,7 +23,7 @@ export interface SidebarItemProps extends Omit<ComponentProps<'button'>, 'childr
   children?: ReactElement
 }
 
-function renderIcon(icon: SidebarItemProps['icon'], size: 14 | 18) {
+function renderIcon(icon: SidebarItemProps['icon'], size: 16 | 18) {
   if (icon === undefined) return null
   if (isValidElement(icon)) return icon
   return typeof icon === 'string' ? (
@@ -60,7 +60,7 @@ export function SidebarItem({
         FIELD.md,
         'transition-colors duration-150',
         // level 0: 18px icon inside the 20px slot. level 1 (saved views) is indented one icon column.
-        level === 0 ? '[--icon:1.125rem]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:0.875rem]',
+        level === 0 ? '[--icon:1.125rem]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:1rem]',
         'hover:bg-muted focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:bg-sidebar-accent data-active:text-body-strong data-active:text-sidebar-accent-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
@@ -71,7 +71,7 @@ export function SidebarItem({
       )}
       {...props}
     >
-      {renderIcon(icon, level === 0 ? 18 : 14)}
+      {renderIcon(icon, level === 0 ? 18 : 16)}
       {asChild && children ? (
         <Slot.Slottable>{children}</Slot.Slottable>
       ) : (

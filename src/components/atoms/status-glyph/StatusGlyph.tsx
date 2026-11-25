@@ -88,7 +88,7 @@ const GLYPHS: Record<TicketStatus, { tone: string; body: React.ReactNode }> = {
 
 export interface StatusGlyphProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
   status: TicketStatus
-  /** Pixel size. Default 14 (the Figma grid). */
+  /** Pixel size. Default 16 (drawn on the Figma 14 grid, scaled up). */
   size?: number
   /** Accessible label. Defaults to the status name; pass `null` when a visible label sits next to it. */
   label?: string | null
@@ -96,7 +96,7 @@ export interface StatusGlyphProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
 
 export function StatusGlyph({
   status,
-  size = 14,
+  size = 16,
   label,
   className,
   style,

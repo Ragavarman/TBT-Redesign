@@ -5,7 +5,7 @@ export interface BreakdownItem {
   id: string
   label: ReactNode
   value: number
-  /** Leading 14px glyph, e.g. <StatusGlyph status="open" label={null} />. */
+  /** Leading 16px glyph, e.g. <StatusGlyph status="open" label={null} />. */
   glyph?: ReactNode
   /** Segment fill in the distribution bar: a bg-* class. */
   fill: string

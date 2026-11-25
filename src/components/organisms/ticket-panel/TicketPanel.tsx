@@ -122,7 +122,7 @@ export function ActivityItem({
       {...props}
     >
       {icon ??
-        (status ? <StatusGlyph status={status} label={null} /> : <span className="size-3.5" />)}
+        (status ? <StatusGlyph status={status} label={null} /> : <span className="size-4" />)}
       <span className="min-w-0 truncate text-small text-foreground">{children}</span>
       <span className="shrink-0 text-caption text-muted-foreground">· {timeLabel}</span>
     </li>
