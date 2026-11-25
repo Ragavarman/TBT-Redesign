@@ -44,7 +44,10 @@ export function ListItem({
       aria-current={selected ? 'true' : undefined}
       {...(Comp === 'button' && { type: 'button' as const })}
       className={cn(
-        'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none',
+        // optical padding: Body 14/20 + --py → 8px top, ≈13px sides. Two-line row: the leading
+        // visual aligns to the title line so the space around it equals --py on all sides.
+        'optical-edges flex w-full items-start rounded-md optical text-left outline-none',
+        'text-body [--icon:16px] [--lh:1.4286] [--py:calc(8em/14)]',
         !isStatic &&
           'transition-colors duration-150 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
         'data-selected:bg-muted',
@@ -53,7 +56,11 @@ export function ListItem({
       )}
       {...(props as object)}
     >
-      {leading && <span className="flex shrink-0 items-center">{leading}</span>}
+      {leading && (
+        <span data-edge className="flex h-(--e-slot) shrink-0 items-center [--edge:var(--e-slot)]">
+          {leading}
+        </span>
+      )}
       {asChild && children ? (
         <Slot.Slottable>{children}</Slot.Slottable>
       ) : (
@@ -64,7 +71,11 @@ export function ListItem({
           )}
         </span>
       )}
-      {trail && <span className="flex shrink-0 items-center">{trail}</span>}
+      {trail && (
+        <span data-edge className="flex shrink-0 items-center self-center [--edge:var(--e-slot)]">
+          {trail}
+        </span>
+      )}
     </Comp>
   )
 }

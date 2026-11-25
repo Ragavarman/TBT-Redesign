@@ -2,6 +2,7 @@ import { isValidElement, type ComponentProps, type ReactElement, type ReactNode 
 import type { LucideIcon } from 'lucide-react'
 import { Slot } from 'radix-ui'
 import { Icon, IconButton, type IconName } from '@/components/atoms'
+import { FIELD } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 
 export interface SidebarItemProps extends Omit<ComponentProps<'button'>, 'children'> {
@@ -54,9 +55,12 @@ export function SidebarItem({
       aria-current={active ? 'page' : undefined}
       {...(!asChild && { type: 'button' as const })}
       className={cn(
-        'group/sidebar-item flex h-8 w-full items-center gap-2 rounded-sm pr-2 text-left text-body text-sidebar-foreground outline-none',
+        // optical padding: Body + --py → 32px; the icon is pulled to the edge
+        'group/sidebar-item optical-edges flex w-full items-center rounded-sm optical text-left text-sidebar-foreground outline-none',
+        FIELD.md,
         'transition-colors duration-150',
-        level === 0 ? 'pl-2' : 'pl-8',
+        // level 1 (saved views) is indented by one icon column + gap
+        level === 0 ? '[--icon:16px]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:14px]',
         'hover:bg-muted focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:bg-sidebar-accent data-active:text-body-strong data-active:text-sidebar-accent-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',

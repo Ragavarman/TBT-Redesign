@@ -1,15 +1,21 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { Icon } from '@/components/atoms'
+import { FIELD } from '@/lib/optical'
 import { cn } from '@/lib/utils'
 import { paginationRange } from './range'
 
-const pageButton = cn(
-  'inline-flex size-7 shrink-0 items-center justify-center rounded-sm border border-transparent px-1.5',
-  'text-small text-muted-foreground transition-[background-color,color] duration-150 outline-none',
+// optical padding: Small 13/18 + --py → 28px. Numbers: min-width = height (square for 1–2
+// digits, grows for more). Prev/next: icon-only squares.
+const pageBase = cn(
+  'inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent [--bw:1px] [--icon:14px]',
+  FIELD.sm,
+  'text-muted-foreground transition-[background-color,color] duration-150 outline-none',
   'hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
   'disabled:pointer-events-none disabled:opacity-50',
   'aria-[current=page]:border-border aria-[current=page]:bg-card aria-[current=page]:text-label aria-[current=page]:text-foreground',
 )
+const pageButton = cn(pageBase, 'min-w-[calc(var(--slot)+2*var(--py))] optical tabular-nums')
+const pageArrow = cn(pageBase, 'optical-square')
 
 export interface PaginationProps extends Omit<ComponentProps<'nav'>, 'onChange'> {
   /** Current page, 1-based. */
@@ -57,7 +63,7 @@ export function Pagination({
       )}
       <button
         type="button"
-        className={pageButton}
+        className={pageArrow}
         aria-label="Previous page"
         disabled={page <= 1}
         onClick={() => go(page - 1)}
@@ -84,7 +90,7 @@ export function Pagination({
       )}
       <button
         type="button"
-        className={pageButton}
+        className={pageArrow}
         aria-label="Next page"
         disabled={page >= pageCount}
         onClick={() => go(page + 1)}

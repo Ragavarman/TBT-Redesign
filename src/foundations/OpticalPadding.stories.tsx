@@ -6,9 +6,13 @@
  */
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Avatar, Badge, Button, IconButton, Input, Kbd } from '@/components/atoms'
+import { Avatar, Badge, Button, IconButton, Input, Kbd, StatusGlyph } from '@/components/atoms'
 import {
   ConditionBadge,
+  ListItem,
+  Pagination,
+  RailItem,
+  SidebarItem,
   Select,
   SlaBadge,
   Tabs,
@@ -105,25 +109,30 @@ function Measure({
   expectH,
   square,
   check = 'edges',
+  pick,
 }: {
   children: ReactNode
   expectH?: number
   square?: boolean
   /** edges: side gap = vertical gap · shape: square only (counters) · center: cap centred (avatars) · none */
-  check?: 'edges' | 'shape' | 'center' | 'none'
+  check?: 'edges' | 'leading' | 'shape' | 'center' | 'none'
+  /** CSS selector of the element to measure inside the specimen (default: its root) */
+  pick?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [m, setM] = useState<Metrics | null>(null)
   useLayoutEffect(() => {
     let alive = true
     void document.fonts.ready.then(() => {
-      const root = ref.current?.firstElementChild as HTMLElement | null
+      const root = (
+        pick ? ref.current?.querySelector(pick) : ref.current?.firstElementChild
+      ) as HTMLElement | null
       if (alive && root) setM(measure(root))
     })
     return () => {
       alive = false
     }
-  }, [])
+  }, [pick])
   const checks: [string, boolean][] = m
     ? [
         ...(expectH ? [[`H ${fmt(m.h)}`, ok(m.h, expectH)] as [string, boolean]] : []),
@@ -138,7 +147,7 @@ function Measure({
               ],
             ]
           : []),
-        ...(check === 'edges' && m.l
+        ...((check === 'edges' || check === 'leading') && m.l
           ? [[`L ${fmt(m.l.gap)}/${fmt(m.l.v)}`, ok(m.l.gap, m.l.v)] as [string, boolean]]
           : []),
         ...(check === 'edges' && m.r
@@ -372,6 +381,55 @@ export const Audit: Story = {
               <span className="flex-1">Change status</span>
               <Icon name="chevron-right" size={14} />
             </div>
+          </Measure>
+        </Row>
+      </Section>
+
+      <Section title="Navigation & lists">
+        <Row label="sidebar item · 32px">
+          <Measure expectH={32}>
+            <SidebarItem label="My tickets" icon="inbox" count={8} className="w-56" />
+          </Measure>
+          <Measure expectH={32}>
+            <SidebarItem label="Open" icon="inbox" count={31} active className="w-56" />
+          </Measure>
+          <Measure expectH={32} check="none">
+            <SidebarItem
+              level={1}
+              label="Investigating"
+              icon={<StatusGlyph status="investigating" label={null} />}
+              count={41}
+              className="w-56"
+            />
+          </Measure>
+        </Row>
+        <Row label="rail item · 36px">
+          <Measure expectH={36} square>
+            <RailItem icon="inbox" label="Inbox" tooltip={false} />
+          </Measure>
+          <Measure expectH={36} square>
+            <RailItem icon="customers" label="Customers" active tooltip={false} />
+          </Measure>
+        </Row>
+        <Row label="pagination · 28px">
+          <Measure expectH={28} square pick='[aria-label="Previous page"]'>
+            <Pagination appearance="inline" page={5} pageCount={120} onPageChange={() => {}} />
+          </Measure>
+          <Measure expectH={28} square check="shape" pick='[aria-current="page"]'>
+            <Pagination appearance="inline" page={5} pageCount={120} onPageChange={() => {}} />
+          </Measure>
+          <Measure expectH={28} check="shape" pick='[aria-label="Page 120"]'>
+            <Pagination appearance="inline" page={5} pageCount={120} onPageChange={() => {}} />
+          </Measure>
+        </Row>
+        <Row label="list item · 2 lines (trailing chevron centred on both lines — exception)">
+          <Measure check="leading">
+            <ListItem
+              title="Dana Whitfield"
+              description="Northwind · 4 open tickets"
+              leading={<Avatar name="Dana Whitfield" size="xs" />}
+              className="w-80"
+            />
           </Measure>
         </Row>
       </Section>

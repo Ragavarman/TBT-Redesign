@@ -41,7 +41,9 @@ export function RailItem({
       aria-current={active ? 'page' : undefined}
       {...(!asChild && { type: 'button' as const })}
       className={cn(
-        'relative inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-transparent',
+        // icon-only square: Body strong 14/20 + --py → 36×36, 16px icon centred in the 1lh slot
+        'relative optical-square inline-flex shrink-0 items-center justify-center rounded-md border border-transparent',
+        'text-body-strong [--bw:1px] [--icon:16px] [--lh:1.4286] [--py:calc(8em/14)]',
         'text-muted-foreground transition-colors duration-150 outline-none',
         'hover:bg-accent hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:border-border data-active:bg-card data-active:text-foreground',
