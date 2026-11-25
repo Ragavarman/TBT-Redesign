@@ -21,3 +21,10 @@ export * from './ticket-breadcrumb'
 export * from './ticket-list-item'
 export * from './ticket-panel'
 export * from './ticket-row'
+
+// 6a · Page pieces
+export * from './chart-card'
+export * from './composer-bar'
+export * from './filter-chips'
+export * from './kpi-strip'
+export * from './page-header'

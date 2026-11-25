@@ -49,6 +49,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-neutral: var(--chart-neutral);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -85,6 +86,13 @@
   --radius: 0.625rem;
   /* Inter cap height ÷ em (capHeight 1490 / unitsPerEm 2048). Fallback for browsers without `cap`. */
   --cap-ratio: 0.727;
+  /* Neutral data series (e.g. "Created" beside success "Resolved"). Lighter than muted-foreground
+     so it stays CVD-separable from the status greens (dataviz validator: deutan ΔE ≥ 8). */
+  --chart-neutral: var(--base-400);
+}
+
+.dark {
+  --chart-neutral: var(--base-600);
 }
 
 /* ── Optical padding ──────────────────────────────────────────────────────────

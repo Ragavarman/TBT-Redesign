@@ -5,5 +5,6 @@
 export * from './assets'
 export * from './navigation'
 export * from './people'
+export * from './reports'
 export * from './tickets'
 export * from './time'
