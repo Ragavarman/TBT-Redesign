@@ -9,8 +9,10 @@ import {
   StatusGlyph,
 } from '@/components/atoms'
 import {
+  Alert,
   EmptyState,
   PropertyRow,
+  SlaBadge,
   Tabs,
   TabsContent,
   TabsList,
@@ -30,6 +32,7 @@ import {
   FilterChips,
   InternalNote,
   LinkedTicketRow,
+  ResolveDialog,
   SnoozeMenu,
   snoozeLabel,
   STATUS_PICKER_LABEL,
@@ -40,6 +43,7 @@ import {
   TimelineEntry,
   type ComposerMode,
   type ComposerSubmit,
+  type ResolveSubmit,
   type SnoozeUntil,
 } from '@/components/organisms'
 import { TicketWorkspaceTemplate } from '@/components/templates'
@@ -66,6 +70,7 @@ import {
   type TicketActivityKind,
   type TicketDetail,
   type TicketMessage,
+  type TicketPriority,
   type TicketStatus,
 } from '@/types'
 
@@ -443,12 +448,17 @@ const pickerTrigger =
 function DetailsCard({
   ticket,
   team,
+  priority,
+  sla,
   statusPicker,
   assigneePicker,
   detail,
 }: {
   ticket: Ticket
   team: string
+  priority: TicketPriority
+  /** SLA value: plain text when on track, a badge when at risk or breached. */
+  sla: ReactNode
   /** <StatusPicker /> with its trigger — the Status value. */
   statusPicker: ReactNode
   /** <AssigneePicker /> with its trigger — the Assignee value. */
@@ -464,8 +474,8 @@ function DetailsCard({
       <PropertyRow label="Status">{statusPicker}</PropertyRow>
       <PropertyRow label="Assignee">{assigneePicker}</PropertyRow>
       <PropertyRow label="Priority">
-        <PriorityGlyph priority={ticket.priority} label={null} />
-        {TICKET_PRIORITY_LABEL[ticket.priority]}
+        <PriorityGlyph priority={priority} label={null} />
+        {TICKET_PRIORITY_LABEL[priority]}
       </PropertyRow>
       <PropertyRow label="Team">{team}</PropertyRow>
       <PropertyRow label="Application">{detail.application}</PropertyRow>
@@ -477,7 +487,7 @@ function DetailsCard({
         ))}
         <IconButton icon="plus" label="Add label" size="sm" className="size-6" />
       </PropertyRow>
-      <PropertyRow label="SLA">{ticket.sla?.label}</PropertyRow>
+      <PropertyRow label="SLA">{sla}</PropertyRow>
       <DetailsGroup title="Linked">
         <PropertyRow label="Asset" action={{ label: 'Link device', onClick: () => {} }}>
           {detail.asset}
@@ -548,6 +558,8 @@ export interface TicketDetailPageProps {
   initialComposer?: ComposerMode
   /** Text already typed in that composer, e.g. "/print" to show the canned-reply menu. */
   initialComposerText?: string
+  /** Open the resolve dialog on load (story: Figma X8). */
+  initialResolve?: boolean
   onBack: () => void
   onOpenTicket: (id: number) => void
 }
@@ -555,6 +567,16 @@ export interface TicketDetailPageProps {
 type Picker = 'status' | 'assignee' | 'snooze'
 
 const TEAMS = ['Support Team Alpha', 'Technical Team Beta', 'Sales Team Gamma']
+
+/** Resolution reasons in the resolve dialog (Figma X8). */
+const RESOLUTIONS = [
+  'Fixed — firmware rolled back',
+  'Fixed — settings changed',
+  'Answered — how-to question',
+  'Duplicate of another ticket',
+  'No reply from the customer',
+  'Won’t fix',
+]
 
 /** Open tickets per agent — the load shown in the assignee picker. */
 const openCount = (agentId: string) =>
@@ -572,6 +594,7 @@ export function TicketDetailPage({
   initialPicker,
   initialComposer,
   initialComposerText,
+  initialResolve,
   onBack,
   onOpenTicket,
 }: TicketDetailPageProps) {
@@ -591,7 +614,15 @@ export function TicketDetailPage({
   const [snoozed, setSnoozed] = useState<SnoozeUntil>()
   const [activity, setActivity] = useState<TicketActivity[]>(detail.activity)
   const [messages, setMessages] = useState<TicketMessage[]>(detail.messages)
+  const [priority, setPriority] = useState<TicketPriority>(ticket.priority)
+  const [resolution, setResolution] = useState(detail.resolution)
+  const [resolveOpen, setResolveOpen] = useState(initialResolve ?? false)
+  // SLA: a reply is the first response; escalating hands it to the lead
+  const [responded, setResponded] = useState(false)
+  const [escalated, setEscalated] = useState(false)
   const resolved = status === 'resolved' || status === 'closed'
+  const closed = status === 'closed'
+  const breached = ticket.sla?.state === 'breached' && !responded && !resolved
 
   // Local changes are stamped a second apart from the workspace's "now", so they sort in order.
   const seq = useRef(0)
@@ -610,8 +641,57 @@ export function TicketDetailPage({
       `${STATUS_PICKER_LABEL[status]} → ${STATUS_PICKER_LABEL[next]}`,
     )
     setStatus(next)
-    if (next === 'resolved' || next === 'closed') setSnoozed(undefined)
+    const done = next === 'resolved' || next === 'closed'
+    if (done) {
+      setSnoozed(undefined)
+      setComposer(null)
+      setResolution((r) => r ?? { by: me.name, at: stamp() })
+    } else setResolution(undefined)
     toast.success(`Status changed to ${STATUS_PICKER_LABEL[next]}`)
+  }
+
+  /** Resolve from the dialog: resolution, closing message, survey. */
+  const resolveWith = (r: ResolveSubmit) => {
+    if (r.message) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: `local-m${seq.current}`,
+          author: me,
+          from: 'agent',
+          via: 'Email',
+          body: r.message,
+          at: stamp(),
+        },
+      ])
+      setResponded(true)
+    }
+    log(`${me.name} resolved the ticket`, r.resolution)
+    setStatus('resolved')
+    setSnoozed(undefined)
+    setComposer(null)
+    setResolution({ by: me.name, at: stamp() })
+    toast.success(
+      [
+        `${formatTicketId(ticket.id)} resolved`,
+        r.survey && 'survey sent',
+        r.linkNote && 'linked to the knowledge note',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    )
+  }
+
+  const reopen = () => changeStatus('open')
+
+  /** Breached SLA → hand to the team lead at urgent priority. */
+  const escalate = () => {
+    const lead = wsAgents.teamLead
+    log(`${me.name} escalated the ticket`, `To ${lead.name} · priority Urgent`)
+    setPriority('urgent')
+    setAssignee(lead)
+    setEscalated(true)
+    toast.success(`Escalated to ${lead.name}`)
   }
 
   const assign = (agent: Agent | undefined) => {
@@ -671,6 +751,7 @@ export function TicketDetailPage({
         },
       ])
       log(`${me.name} replied by email`, quote(p.body), 'message')
+      setResponded(true)
       if (p.setWaiting) changeStatus('waiting')
       toast.success(`Reply sent to ${ticket.requester.name}`)
     } else if (p.mode === 'note') {
@@ -700,21 +781,90 @@ export function TicketDetailPage({
   }
 
   useHotkeys({
-    r: () => compose('reply'),
-    n: () => compose('note'),
-    '/': () => compose('reply', '/'),
+    r: () => !closed && compose('reply'),
+    n: () => !closed && compose('note'),
+    '/': () => !closed && compose('reply', '/'),
     s: () => setPicker('status'),
     'shift+a': () => setPicker('assignee'),
     a: () => assign(me),
     h: () => !resolved && setPicker('snooze'),
-    e: () => changeStatus(resolved ? 'open' : 'resolved'),
+    e: () => (resolved ? reopen() : changeStatus('resolved')),
+    'shift+e': () => !resolved && setResolveOpen(true),
     j: () => step(1),
     k: () => step(-1),
     escape: onBack,
   })
 
+  const firstName = ticket.requester.name.split(' ')[0] ?? ticket.requester.name
+
+  // Ticket-state banner under the tabs (Figma X9 closed, X10 SLA breached).
+  const banner = resolved ? (
+    <Alert
+      variant="success"
+      icon="check"
+      title={closed ? 'Closed' : 'Resolved'}
+      description={[
+        resolution &&
+          `Resolved by ${resolution.by} on ${monthDay(resolution.at)}${clock(resolution.at) ? `, ${clock(resolution.at)}` : ''}`,
+        resolution?.csat !== undefined && `CSAT ${resolution.csat}/5`,
+        closed
+          ? `Replies from ${firstName} reopen it.`
+          : `It reopens if ${firstName} replies within 7 days.`,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      action={
+        <Button variant="outline" size="sm" onClick={reopen}>
+          Reopen
+        </Button>
+      }
+    />
+  ) : breached ? (
+    escalated ? (
+      <Alert
+        variant="warning"
+        title="Escalated"
+        description={`${wsAgents.teamLead.name} has the ticket at urgent priority. The first response is still overdue — reply now.`}
+      />
+    ) : (
+      <Alert
+        variant="destructive"
+        title="SLA breached"
+        description={`First response is overdue (${ticket.sla!.label.toLowerCase()}). Reply now or escalate to the team lead.`}
+        action={
+          <Button variant="outline" size="sm" onClick={escalate}>
+            Escalate
+          </Button>
+        }
+      />
+    )
+  ) : undefined
+
+  const sla = ticket.sla
+  const slaValue = !sla ? undefined : resolved ? (
+    `Resolved · SLA ${sla.state === 'breached' && !responded ? 'breached' : 'met'}`
+  ) : breached ? (
+    <SlaBadge state="breached">{sla.label}</SlaBadge>
+  ) : sla.state === 'breached' ? (
+    'Responded late'
+  ) : sla.state === 'at-risk' ? (
+    <SlaBadge state="at-risk">{sla.label}</SlaBadge>
+  ) : (
+    sla.label
+  )
+
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as TicketTab)} className="contents">
+      <ResolveDialog
+        open={resolveOpen}
+        onOpenChange={setResolveOpen}
+        ticketLabel={formatTicketId(ticket.id)}
+        customerName={firstName}
+        resolutions={RESOLUTIONS}
+        defaultMessage={`Hi ${firstName}, this should be sorted now. Reply here if it happens again.`}
+        knowledgeNote={detail.knowledgeNote}
+        onResolve={resolveWith}
+      />
       <TicketWorkspaceTemplate
         sidebar={sidebar}
         list={
@@ -765,7 +915,7 @@ export function TicketDetailPage({
               <Button
                 variant="secondary"
                 shortcut="E"
-                onClick={() => changeStatus(resolved ? 'open' : 'resolved')}
+                onClick={() => (resolved ? reopen() : setResolveOpen(true))}
               >
                 {resolved ? 'Reopen' : 'Resolve'}
               </Button>
@@ -783,9 +933,21 @@ export function TicketDetailPage({
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
         }
-        composerLayout={composer ? 'docked' : 'floating'}
+        banner={banner}
+        composerLayout={composer || closed ? 'docked' : 'floating'}
         composer={
-          composer ? (
+          closed ? (
+            // Figma X9: read-only — no replying or notes until it's reopened
+            <div className="flex items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3">
+              <Icon name="lock" size={16} className="text-muted-foreground" />
+              <p className="min-w-0 flex-1 text-body text-muted-foreground">
+                This ticket is closed. Reopen it to reply or add a note.
+              </p>
+              <Button shortcut="E" onClick={reopen}>
+                Reopen
+              </Button>
+            </div>
+          ) : composer ? (
             <Composer
               mode={composer.mode}
               onModeChange={(mode) => setComposer((c) => ({ ...c, mode }))}
@@ -846,6 +1008,8 @@ export function TicketDetailPage({
             <DetailsCard
               ticket={ticket}
               team={team}
+              priority={priority}
+              sla={slaValue}
               detail={detail}
               statusPicker={
                 <StatusPicker

@@ -66,5 +66,23 @@ export const NoteMention: Story = {
 /** More → Log a call. */
 export const CallLog: Story = { args: { initialComposer: 'call' } }
 
+/** Figma X8 · Resolve dialog (Resolve button or ⇧E; E resolves without it). */
+export const Resolve: Story = { args: { initialResolve: true } }
+
+/** Figma X9 · Closed, read-only: banner with Reopen, no composer until it's reopened (E). */
+export const Closed: Story = {
+  args: { ticket: wsTickets.find((t) => t.status === 'closed')! },
+}
+
+/** Resolved (not yet closed): banner, but replies are still allowed. */
+export const Resolved: Story = {
+  args: { ticket: wsTickets.find((t) => t.status === 'resolved')! },
+}
+
+/** Figma X10 · SLA breached: red banner with Escalate; replying clears it. */
+export const SlaBreached: Story = {
+  args: { ticket: wsTickets.find((t) => t.sla?.state === 'breached')! },
+}
+
 /** A ticket with only generated detail (no email, no files). */
 export const SparseTicket: Story = { args: { ticket: wsTickets[3]!, initialTab: 'timeline' } }

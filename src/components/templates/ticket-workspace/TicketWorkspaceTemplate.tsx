@@ -8,6 +8,8 @@ export interface TicketWorkspaceTemplateProps extends Omit<AppShellProps, 'child
   header: ReactNode
   /** Tabs under the header (Conversation · Original email · Attachments · Timeline). */
   tabs?: ReactNode
+  /** Ticket-state <Alert /> pinned under the tabs (closed, SLA breached …); doesn't scroll. */
+  banner?: ReactNode
   /** The conversation or timeline. Scrolls; leaves room at the bottom for the composer. */
   children: ReactNode
   /** <ComposerBar /> floating over the bottom of the conversation, or an open <Composer />. */
@@ -30,6 +32,7 @@ export function TicketWorkspaceTemplate({
   list,
   header,
   tabs,
+  banner,
   children,
   composer,
   composerLayout = 'floating',
@@ -43,6 +46,7 @@ export function TicketWorkspaceTemplate({
       <Panel className="relative">
         {header}
         {tabs && <div className="shrink-0 border-b">{tabs}</div>}
+        {banner && <div className="shrink-0 px-5 pt-4">{banner}</div>}
         <PanelBody className={floating ? 'pb-20' : undefined}>{children}</PanelBody>
         {floating && <div className="absolute inset-x-0 bottom-0">{composer}</div>}
         {composer && !floating && <div className="shrink-0 px-4 pt-2 pb-4">{composer}</div>}

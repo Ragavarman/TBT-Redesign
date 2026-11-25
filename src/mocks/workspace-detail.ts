@@ -171,6 +171,7 @@ const t222: TicketDetail = {
     { id: 188, subject: 'Call from (909) 802-3652', status: 'closed', timeLabel: 'Nov 4' },
     { id: 171, subject: 'Receipt printer shows offline', status: 'resolved', timeLabel: 'Oct 28' },
   ],
+  knowledgeNote: 'Reset a receipt printer after firmware update',
   customer: { tag: 'Frequent caller', tickets: 3, open: 2, since: '2026-11-04' },
 }
 
@@ -219,6 +220,14 @@ function generated(t: Ticket): TicketDetail {
         : undefined,
     attachments: [],
     similar: [],
+    resolution:
+      t.status === 'resolved' || t.status === 'closed'
+        ? {
+            by: t.assignee?.name ?? 'Team Lead',
+            at: t.updatedAt,
+            csat: t.status === 'closed' ? 5 : undefined,
+          }
+        : undefined,
     customer: {
       tickets: t.requester.openTickets + 1,
       open: t.requester.openTickets,

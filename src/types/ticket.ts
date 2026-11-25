@@ -164,6 +164,16 @@ export interface TicketDetail {
   asset?: string
   invoice?: string
   similar: { id: number; subject: string; status: TicketStatus; timeLabel: string }[]
+  /** Set once resolved / closed (Figma X9 banner). */
+  resolution?: {
+    by: string
+    /** ISO timestamp. */
+    at: string
+    /** Satisfaction score out of 5, when the survey came back. */
+    csat?: number
+  }
+  /** Knowledge note the fix can be linked to when resolving (Figma X8). */
+  knowledgeNote?: string
   customer: {
     tag?: string
     tickets: number
