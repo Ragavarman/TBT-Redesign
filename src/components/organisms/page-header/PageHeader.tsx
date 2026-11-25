@@ -16,7 +16,10 @@ export interface PageHeaderProps extends Omit<ComponentProps<'header'>, 'title'>
   actions?: ReactNode
 }
 
-/** Top bar of a main panel (Figma Interface · Header): 64px, 16px padding, bottom border. */
+/**
+ * Top bar of a main panel (Figma Interface · Header). Min 52px — the same as the sidebar's
+ * WorkspaceHeader (h-13), so the two header rules line up across the screen.
+ */
 export function PageHeader({
   icon,
   title,
@@ -29,7 +32,7 @@ export function PageHeader({
   return (
     <header
       data-slot="page-header"
-      className={cn('flex min-h-16 shrink-0 items-center gap-4 border-b px-4 py-4', className)}
+      className={cn('flex min-h-13 shrink-0 items-center gap-4 border-b px-4 py-2', className)}
       {...props}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
