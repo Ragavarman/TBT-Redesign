@@ -13,7 +13,7 @@ import { Icon, type IconName } from '../icon'
 const badgeVariants = cva(
   [
     'optical-edges inline-flex shrink-0 items-center optical whitespace-nowrap',
-    'rounded-xs border border-transparent [--bw:1px] [--icon:12px]',
+    'rounded-xs border border-transparent [--bw:1px] [--icon:0.75rem]',
   ],
   {
     variants: {
@@ -82,7 +82,7 @@ export function Badge({
         <span
           aria-hidden
           data-edge
-          className="size-1.5 shrink-0 rounded-full bg-current [--edge:6px]"
+          className="size-1.5 shrink-0 rounded-full bg-current [--edge:0.375rem]"
         />
       )}
       {icon &&

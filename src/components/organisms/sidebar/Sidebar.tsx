@@ -51,7 +51,7 @@ export function Sidebar({
         'relative flex h-full shrink-0 rounded-xl border border-sidebar-border bg-sidebar text-sidebar-foreground',
         'transition-[width] duration-200 ease-out motion-reduce:transition-none',
         // rail 56 (+ sub-nav 240) + 2px of border
-        collapsed ? 'w-[58px]' : 'w-[298px]',
+        collapsed ? 'w-[calc(3.5rem+2px)]' : 'w-[calc(18.5rem+2px)]',
         className,
       )}
       {...props}

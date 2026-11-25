@@ -60,7 +60,7 @@ export function SidebarItem({
         FIELD.md,
         'transition-colors duration-150',
         // level 0: 18px icon inside the 20px slot. level 1 (saved views) is indented one icon column.
-        level === 0 ? '[--icon:18px]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:14px]',
+        level === 0 ? '[--icon:1.125rem]' : 'ps-[calc(var(--px)+1.5rem)]! [--icon:0.875rem]',
         'hover:bg-muted focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:bg-sidebar-accent data-active:text-body-strong data-active:text-sidebar-accent-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',

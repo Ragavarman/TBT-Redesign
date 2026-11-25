@@ -37,7 +37,7 @@ function SelectTrigger({
       className={cn(
         fieldBase,
         // optical padding: same height as Input / Button of the same size; chevron at the edge
-        'group/select optical-edges flex items-center justify-between optical text-left whitespace-nowrap [--bw:1px] [--icon:14px]',
+        'group/select optical-edges flex items-center justify-between optical text-left whitespace-nowrap [--bw:1px] [--icon:0.875rem]',
         size === 'sm' ? FIELD.sm : FIELD.md,
         'focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring',
         'data-[state=open]:border-ring data-[state=open]:ring-1 data-[state=open]:ring-ring',

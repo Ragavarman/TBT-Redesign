@@ -29,7 +29,7 @@ export const CAPTION = {
 
 /** Icon sizes kept from Figma (14 / 16 / 16), centred in the 1lh slot. */
 export const ICON = {
-  12: '[--icon:12px]',
-  14: '[--icon:14px]',
-  16: '[--icon:16px]',
+  12: '[--icon:0.75rem]',
+  14: '[--icon:0.875rem]',
+  16: '[--icon:1rem]',
 } as const

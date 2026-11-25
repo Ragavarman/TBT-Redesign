@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Checkbox, Icon, IconButton, Skeleton } from '@/components/atoms'
+import { rem } from '@/lib/units'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,8 +89,10 @@ interface LayoutColumn {
 }
 
 function columnStyle(column: LayoutColumn): CSSProperties | undefined {
-  const width = column.columnDef.meta?.width
-  return width ? { width, minWidth: width, maxWidth: width } : undefined
+  const px = column.columnDef.meta?.width
+  if (!px) return undefined
+  const width = typeof px === 'number' ? rem(px) : px
+  return { width, minWidth: width, maxWidth: width }
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { LucideIcon, LucideProps } from 'lucide-react'
+import { rem } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { ICONS, type IconName, type IconSize } from './icons'
 
@@ -18,11 +19,13 @@ export type IconProps = IconSource &
  * Lucide icon at a TBT size with the Figma 1.5px round stroke.
  * Color follows `currentColor` — tint with a text token (`text-muted-foreground`).
  */
-export function Icon({ name, icon, size = 16, label, className, ...props }: IconProps) {
+export function Icon({ name, icon, size = 16, label, className, style, ...props }: IconProps) {
   const Component = icon ?? ICONS[name as IconName]
   return (
     <Component
       size={size}
+      // size is in Figma px; render it in rem so icons grow with the UI scale / browser text size
+      style={{ width: rem(size), height: rem(size), ...style }}
       strokeWidth={1.5}
       absoluteStrokeWidth
       aria-hidden={label ? undefined : true}

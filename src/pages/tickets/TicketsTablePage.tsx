@@ -38,7 +38,7 @@ const col = createDataTableColumns<Ticket>()
 const columns = col.columns([
   col.accessor('id', {
     header: 'ID',
-    meta: { width: 80 },
+    meta: { width: 72 },
     cell: ({ getValue }) => <span className="tabular-nums">{formatTicketId(getValue())}</span>,
   }),
   col.accessor('subject', {
@@ -48,12 +48,12 @@ const columns = col.columns([
   col.accessor((r) => customerLabel(r.requester), {
     id: 'customer',
     header: 'Customer',
-    meta: { width: 170 },
+    meta: { width: 150 },
     cell: ({ getValue }) => <PersonText name={getValue()} />,
   }),
   col.accessor('status', {
     header: 'Status',
-    meta: { width: 160 },
+    meta: { width: 136 },
     cell: ({ getValue }) => (
       <span className="flex items-center gap-2 text-muted-foreground">
         <StatusGlyph status={getValue()} label={null} />
@@ -63,7 +63,7 @@ const columns = col.columns([
   }),
   col.accessor('priority', {
     header: 'Priority',
-    meta: { width: 110 },
+    meta: { width: 100 },
     sortFn: (a, b) =>
       TICKET_PRIORITIES.indexOf(a.original.priority) -
       TICKET_PRIORITIES.indexOf(b.original.priority),
@@ -77,12 +77,12 @@ const columns = col.columns([
   col.accessor((r) => r.assignee?.name ?? '', {
     id: 'assignee',
     header: 'Assignee',
-    meta: { width: 150 },
+    meta: { width: 128 },
     cell: ({ row }) => <PersonText name={row.original.assignee?.name} />,
   }),
   col.accessor('updatedAt', {
     header: 'Updated',
-    meta: { width: 90 },
+    meta: { width: 88 },
     cell: ({ getValue }) => <span className="tabular-nums">{shortAgo(getValue())}</span>,
   }),
 ])

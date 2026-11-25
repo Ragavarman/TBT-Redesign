@@ -198,8 +198,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* UI scale. Every size is in rem (type, spacing, radius, icons, panels), so this one value
+     grows the whole interface in proportion. 8/7 of the browser default turns 14px Body into
+     16px (16 → 18.29px root). A percentage, so it still follows the user's browser text size. */
   html {
     @apply font-sans antialiased;
+    font-size: calc(100% * 8 / 7);
   }
   /* Scroll areas still scroll (wheel, touch, keyboard) — the bars are just hidden. */
   * {

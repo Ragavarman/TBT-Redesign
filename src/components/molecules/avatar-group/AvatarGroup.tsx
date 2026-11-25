@@ -17,12 +17,12 @@ export interface AvatarGroupProps extends ComponentProps<'div'> {
 
 /** Overflow chip uses the avatar scale: same box, count at 40 % of it. */
 const CHIP = {
-  xs: '[--avatar:20px]',
-  sm: '[--avatar:24px]',
-  md: '[--avatar:32px]',
-  lg: '[--avatar:40px]',
-  xl: '[--avatar:48px]',
-  '2xl': '[--avatar:64px]',
+  xs: '[--avatar:1.25rem]',
+  sm: '[--avatar:1.5rem]',
+  md: '[--avatar:2rem]',
+  lg: '[--avatar:2.5rem]',
+  xl: '[--avatar:3rem]',
+  '2xl': '[--avatar:4rem]',
 } as const
 
 /**

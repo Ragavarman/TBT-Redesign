@@ -28,7 +28,7 @@ export const menuContent = cn(floatingSurface, 'min-w-52 overflow-x-hidden overf
 /** Menu item row: 32px (optical: Body + --py), radius 4, 14px muted icons pulled to the edge. */
 export const menuItem = cn(
   'relative flex w-full cursor-pointer items-center rounded-xs text-popover-foreground outline-none select-none',
-  'optical-edges optical [--icon:14px]',
+  'optical-edges optical [--icon:0.875rem]',
   FIELD.md,
   'focus:bg-accent data-highlighted:bg-accent',
   'data-disabled:pointer-events-none data-disabled:opacity-50',

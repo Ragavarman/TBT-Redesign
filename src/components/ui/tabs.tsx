@@ -55,7 +55,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
       className={cn(
         'relative inline-flex shrink-0 items-center justify-center whitespace-nowrap text-muted-foreground outline-none',
         // optical padding: Label 13/18 + --py per variant (pill 28px, underline 36px)
-        'optical-edges optical text-label [--icon:14px] [--lh:1.3846]',
+        'optical-edges optical text-label [--icon:0.875rem] [--lh:1.3846]',
         'transition-[color,background-color,box-shadow] duration-150',
         'hover:text-foreground data-[state=active]:text-foreground',
         'focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring',

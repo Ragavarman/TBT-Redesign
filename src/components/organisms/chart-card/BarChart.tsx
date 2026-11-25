@@ -1,5 +1,6 @@
 import { useId, type ComponentProps, type ReactNode } from 'react'
 import { Tooltip } from '@/components/molecules'
+import { rem } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export interface BarSeries {
@@ -66,7 +67,7 @@ export function BarChart({
       className={cn('flex flex-col gap-2', className)}
       {...props}
     >
-      <div className="relative" style={{ height }}>
+      <div className="relative" style={{ height: rem(height) }}>
         <div aria-hidden className="pointer-events-none absolute inset-0">
           {GRID.map((g) => (
             <span

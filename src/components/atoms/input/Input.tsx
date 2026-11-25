@@ -87,7 +87,7 @@ export function Input({
         // same shape as ui/input; states come from the inner <input> via has-[] and data-*
         fieldBase,
         // optical padding: type + --py set the height (32 / 28); icons, Kbd and clear sit at the edge
-        'optical-edges flex items-center optical [--bw:1px] [--icon:14px]',
+        'optical-edges flex items-center optical [--bw:1px] [--icon:0.875rem]',
         FIELD[size],
         'has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-1 has-[input:focus-visible]:ring-ring',
         'data-invalid:border-destructive data-invalid:hover:border-destructive',

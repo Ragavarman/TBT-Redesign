@@ -51,7 +51,7 @@ export function TicketStatusBadge({
         variant === 'label' && 'gap-1.5 text-small text-foreground',
         // optical padding (Caption + --py → 22px); the 14px glyph is pulled to the edge
         variant === 'pill' &&
-          cn('optical-edges rounded-full optical [--icon:14px]', CAPTION.md, PILL[status]),
+          cn('optical-edges rounded-full optical [--icon:0.875rem]', CAPTION.md, PILL[status]),
         className,
       )}
       {...props}

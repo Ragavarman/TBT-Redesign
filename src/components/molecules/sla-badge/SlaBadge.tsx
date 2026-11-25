@@ -24,7 +24,7 @@ export function SlaBadge({ state, children, className, ...props }: SlaBadgeProps
       data-state={state}
       className={cn(
         // optical padding (Caption + --py → 22px); clock pulled to the edge
-        'optical-edges inline-flex shrink-0 items-center rounded-full optical whitespace-nowrap [--icon:12px]',
+        'optical-edges inline-flex shrink-0 items-center rounded-full optical whitespace-nowrap [--icon:0.75rem]',
         CAPTION.md,
         TONE[state],
         className,

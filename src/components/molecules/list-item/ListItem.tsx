@@ -47,7 +47,7 @@ export function ListItem({
         // optical padding: Body 14/20 + --py → 8px top, ≈13px sides. Two-line row: the leading
         // visual aligns to the title line so the space around it equals --py on all sides.
         'optical-edges flex w-full items-start rounded-md optical text-left outline-none',
-        'text-body [--icon:16px] [--lh:1.4286] [--py:calc(8em/14)]',
+        'text-body [--icon:1rem] [--lh:1.4286] [--py:calc(8em/14)]',
         !isStatic &&
           'transition-colors duration-150 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
         'data-selected:bg-muted',

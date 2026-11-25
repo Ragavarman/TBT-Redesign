@@ -7,7 +7,7 @@ import { paginationRange } from './range'
 // optical padding: Small 13/18 + --py → 28px. Numbers: min-width = height (square for 1–2
 // digits, grows for more). Prev/next: icon-only squares.
 const pageBase = cn(
-  'inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent [--bw:1px] [--icon:14px]',
+  'inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent [--bw:1px] [--icon:0.875rem]',
   FIELD.sm,
   'text-muted-foreground transition-[background-color,color] duration-150 outline-none',
   'hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',

@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
+import { rem } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export interface AppShellProps extends ComponentProps<'div'> {
@@ -51,7 +52,7 @@ export function Panel({ width, surface = 'card', className, style, ...props }: P
         surface === 'plain' && 'gap-2 overflow-y-auto',
         className,
       )}
-      style={width === undefined ? style : { width, ...style }}
+      style={width === undefined ? style : { width: rem(width), ...style }}
       {...props}
     />
   )

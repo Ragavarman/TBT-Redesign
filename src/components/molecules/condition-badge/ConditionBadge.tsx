@@ -28,7 +28,7 @@ export function ConditionBadge({ condition, className, ...props }: ConditionBadg
       )}
       {...props}
     >
-      <span aria-hidden data-edge className="size-1.5 rounded-full bg-current [--edge:6px]" />
+      <span aria-hidden data-edge className="size-1.5 rounded-full bg-current [--edge:0.375rem]" />
       <span>{ASSET_CONDITION_LABEL[condition]}</span>
     </span>
   )

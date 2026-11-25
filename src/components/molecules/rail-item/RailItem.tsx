@@ -43,7 +43,7 @@ export function RailItem({
       className={cn(
         // icon-only square: Body strong 14/20 + --py → 36×36, 18px icon centred in the 20px slot
         'relative optical-square inline-flex shrink-0 items-center justify-center rounded-md border border-transparent',
-        'text-body-strong [--bw:1px] [--icon:18px] [--lh:1.4286] [--py:calc(8em/14)]',
+        'text-body-strong [--bw:1px] [--icon:1.125rem] [--lh:1.4286] [--py:calc(8em/14)]',
         'text-muted-foreground transition-colors duration-150 outline-none',
         'hover:bg-accent hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         'data-active:border-border data-active:bg-card data-active:text-foreground',

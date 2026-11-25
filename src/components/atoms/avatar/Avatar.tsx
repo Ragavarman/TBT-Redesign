@@ -12,12 +12,12 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
  * Inside a chip / button, override with `[--avatar:var(--e-slot)]` to make it 1lh.
  */
 const SIZE = {
-  xs: { box: '[--avatar:20px]', icon: 12 },
-  sm: { box: '[--avatar:24px]', icon: 12 },
-  md: { box: '[--avatar:32px]', icon: 16 },
-  lg: { box: '[--avatar:40px]', icon: 20 },
-  xl: { box: '[--avatar:48px]', icon: 24 },
-  '2xl': { box: '[--avatar:64px]', icon: 24 },
+  xs: { box: '[--avatar:1.25rem]', icon: 12 },
+  sm: { box: '[--avatar:1.5rem]', icon: 12 },
+  md: { box: '[--avatar:2rem]', icon: 16 },
+  lg: { box: '[--avatar:2.5rem]', icon: 20 },
+  xl: { box: '[--avatar:3rem]', icon: 24 },
+  '2xl': { box: '[--avatar:4rem]', icon: 24 },
 } as const
 
 export interface AvatarProps extends Omit<ComponentProps<typeof UiAvatar>, 'size' | 'children'> {

@@ -31,10 +31,7 @@ export const TwoColumns: Story = {
           />
         </FormField>
         <FormField label="Time zone">
-          <Select
-            value="colombo"
-            options={[{ value: 'colombo', label: '(GMT+5:30) Colombo' }]}
-          />
+          <Select value="colombo" options={[{ value: 'colombo', label: '(GMT+5:30) Colombo' }]} />
         </FormField>
         <FormField label="Display name" helper="Shown in replies to customers">
           <Input defaultValue="Tharsi" />
