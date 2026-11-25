@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, Navigate, RouterProvider, useNavigate, useParams } from 'react-router'
 import type { IconName } from '@/components/atoms'
+import { Toaster } from '@/components/molecules'
 import { ThemeProvider } from '@/lib/theme'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { TicketDetailPage } from '@/pages/tickets/TicketDetailPage'
@@ -85,6 +86,7 @@ export function App() {
   return (
     <ThemeProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </ThemeProvider>
   )
 }

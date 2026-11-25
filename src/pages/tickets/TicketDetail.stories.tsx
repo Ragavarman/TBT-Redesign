@@ -38,5 +38,14 @@ export const Attachments: Story = { args: { initialTab: 'attachments' } }
 /** Figma T3 · the full timeline with filter chips. */
 export const FullTimeline: Story = { args: { initialTab: 'timeline' } }
 
+/** Figma X1 · Status picker open (S). 1–6 pick a status; type to search. */
+export const StatusPicker: Story = { args: { initialPicker: 'status' } }
+
+/** Figma X2 · Assignee picker open (⇧A). A assigns the ticket to you without opening it. */
+export const AssigneePicker: Story = { args: { initialPicker: 'assignee' } }
+
+/** Figma X5 · Snooze menu open (H): presets, or a day and time. */
+export const Snooze: Story = { args: { initialPicker: 'snooze' } }
+
 /** A ticket with only generated detail (no email, no files). */
 export const SparseTicket: Story = { args: { ticket: wsTickets[3]!, initialTab: 'timeline' } }

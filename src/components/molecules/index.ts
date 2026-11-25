@@ -2,8 +2,10 @@
 // Molecules may import from atoms, ui/, lib/ and types/ (enforced by `npm run lint`).
 
 // 4a · Forms & overlays
+export * from './calendar'
 export * from './dropdown-menu'
 export * from './form-field'
+export * from './picker-list'
 export * from './popover'
 export * from './select'
 export * from './tooltip'

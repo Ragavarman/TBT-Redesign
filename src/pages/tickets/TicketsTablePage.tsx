@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Avatar, Button, Checkbox, PriorityGlyph, StatusGlyph } from '@/components/atoms'
 import {
   BulkActionBar,
@@ -8,6 +8,7 @@ import {
   type RowSelectionState,
 } from '@/components/organisms'
 import { ListPageTemplate } from '@/components/templates'
+import { useHotkeys } from '@/hooks/useHotkeys'
 import { customerLabel, shortAgo, wsCounts, wsTickets } from '@/mocks'
 import {
   formatTicketId,
@@ -103,6 +104,22 @@ export function TicketsTablePage({
   const [selection, setSelection] = useState<RowSelectionState>(initialSelection)
   const count = Object.values(selection).filter(Boolean).length
   const all = count === wsTickets.length
+  const table = useRef<HTMLDivElement>(null)
+
+  // J / K move between rows (Enter opens the focused one), Esc clears the selection.
+  const moveRow = (by: number) => {
+    const rows = [...(table.current?.querySelectorAll<HTMLElement>('tbody tr[tabindex]') ?? [])]
+    const at = rows.findIndex((r) => r === document.activeElement)
+    rows[
+      at === -1 ? (by > 0 ? 0 : rows.length - 1) : Math.min(rows.length - 1, Math.max(0, at + by))
+    ]?.focus()
+  }
+  useHotkeys({
+    j: () => moveRow(1),
+    k: () => moveRow(-1),
+    escape: () => setSelection({}),
+  })
+
   return (
     <ListPageTemplate
       sidebar={sidebar}
@@ -162,19 +179,21 @@ export function TicketsTablePage({
         ) : undefined
       }
     >
-      <DataTable
-        appearance="flush"
-        label="All tickets"
-        itemLabel="tickets"
-        columns={columns}
-        data={wsTickets}
-        getRowId={(t) => String(t.id)}
-        selectable
-        rowSelection={selection}
-        onRowSelectionChange={setSelection}
-        pageSize={false}
-        onRowClick={onOpenTicket && ((t) => onOpenTicket(t.id))}
-      />
+      <div ref={table} className="contents">
+        <DataTable
+          appearance="flush"
+          label="All tickets"
+          itemLabel="tickets"
+          columns={columns}
+          data={wsTickets}
+          getRowId={(t) => String(t.id)}
+          selectable
+          rowSelection={selection}
+          onRowSelectionChange={setSelection}
+          pageSize={false}
+          onRowClick={onOpenTicket && ((t) => onOpenTicket(t.id))}
+        />
+      </div>
     </ListPageTemplate>
   )
 }

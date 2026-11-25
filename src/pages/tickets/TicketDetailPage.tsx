@@ -15,24 +15,33 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  toast,
 } from '@/components/molecules'
 import {
+  AssigneePicker,
   AttachmentTile,
   ComposerBar,
   EmailView,
   FilterChips,
   InternalNote,
   LinkedTicketRow,
+  SnoozeMenu,
+  snoozeLabel,
+  STATUS_PICKER_LABEL,
+  StatusPicker,
   TicketBreadcrumb,
   TicketListItem,
   TimelineDay,
   TimelineEntry,
+  type SnoozeUntil,
 } from '@/components/organisms'
 import { TicketWorkspaceTemplate } from '@/components/templates'
-import { shortAgo, WS_NOW, wsTicketDetail } from '@/mocks'
+import { useHotkeys } from '@/hooks/useHotkeys'
+import { shortAgo, WS_NOW, wsAgents, wsCurrentAgent, wsTickets, wsTicketDetail } from '@/mocks'
 import { cn } from '@/lib/utils'
 import {
   formatBytes,
+  type Agent,
   formatTicketId,
   TICKET_PRIORITY_LABEL,
   TICKET_STATUS_LABEL,
@@ -379,13 +388,23 @@ function DetailsGroup({
   )
 }
 
+/** A property value that opens a picker: looks like plain text until hovered. */
+const pickerTrigger =
+  '-mx-1 inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-xs px-1 py-0.5 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-accent'
+
 function DetailsCard({
   ticket,
-  status,
+  team,
+  statusPicker,
+  assigneePicker,
   detail,
 }: {
   ticket: Ticket
-  status: TicketStatus
+  team: string
+  /** <StatusPicker /> with its trigger — the Status value. */
+  statusPicker: ReactNode
+  /** <AssigneePicker /> with its trigger — the Assignee value. */
+  assigneePicker: ReactNode
   detail: TicketDetail
 }) {
   return (
@@ -394,23 +413,13 @@ function DetailsCard({
       className="flex flex-col gap-1 rounded-xl border bg-card px-4 pt-4 pb-3 text-card-foreground"
     >
       <h2 className="pb-2 text-title text-foreground">{ticket.subject}</h2>
-      <PropertyRow label="Status">
-        <StatusGlyph status={status} label={null} />
-        {TICKET_STATUS_LABEL[status]}
-      </PropertyRow>
-      <PropertyRow label="Assignee">
-        {ticket.assignee && (
-          <>
-            <Avatar name={ticket.assignee.name} size="xs" aria-hidden />
-            {ticket.assignee.name}
-          </>
-        )}
-      </PropertyRow>
+      <PropertyRow label="Status">{statusPicker}</PropertyRow>
+      <PropertyRow label="Assignee">{assigneePicker}</PropertyRow>
       <PropertyRow label="Priority">
         <PriorityGlyph priority={ticket.priority} label={null} />
         {TICKET_PRIORITY_LABEL[ticket.priority]}
       </PropertyRow>
-      <PropertyRow label="Team">{ticket.team}</PropertyRow>
+      <PropertyRow label="Team">{team}</PropertyRow>
       <PropertyRow label="Application">{detail.application}</PropertyRow>
       <PropertyRow label="Labels">
         {ticket.tags.map((tag) => (
@@ -485,9 +494,21 @@ export interface TicketDetailPageProps {
   tickets: Ticket[]
   ticket: Ticket
   initialTab?: TicketTab
+  /** Open a picker on load (stories: Figma X1 / X2 / X5). */
+  initialPicker?: Picker
   onBack: () => void
   onOpenTicket: (id: number) => void
 }
+
+type Picker = 'status' | 'assignee' | 'snooze'
+
+const TEAMS = ['Support Team Alpha', 'Technical Team Beta', 'Sales Team Gamma']
+
+/** Open tickets per agent — the load shown in the assignee picker. */
+const openCount = (agentId: string) =>
+  wsTickets.filter(
+    (t) => t.assignee?.id === agentId && t.status !== 'resolved' && t.status !== 'closed',
+  ).length
 
 export function TicketDetailPage({
   sidebar,
@@ -496,14 +517,90 @@ export function TicketDetailPage({
   tickets,
   ticket,
   initialTab = 'conversation',
+  initialPicker,
   onBack,
   onOpenTicket,
 }: TicketDetailPageProps) {
   const detail = wsTicketDetail(ticket.id)!
+  const me = wsCurrentAgent
   const [tab, setTab] = useState<TicketTab>(initialTab)
-  // Resolve works on the mock: flips the status and back (Reopen).
+  const [picker, setPicker] = useState<Picker | null>(initialPicker ?? null)
+  const pickerProps = (p: Picker) => ({
+    open: picker === p,
+    onOpenChange: (open: boolean) => setPicker(open ? p : null),
+  })
+
+  // Everything below works against the mock ticket, and each change lands on the timeline.
   const [status, setStatus] = useState<TicketStatus>(ticket.status)
+  const [assignee, setAssignee] = useState<Agent | undefined>(ticket.assignee)
+  const [team, setTeam] = useState(ticket.team)
+  const [snoozed, setSnoozed] = useState<SnoozeUntil>()
+  const [activity, setActivity] = useState<TicketActivity[]>(detail.activity)
   const resolved = status === 'resolved' || status === 'closed'
+
+  const log = (title: string, entryDetail?: string, kind: TicketActivityKind = 'status') =>
+    setActivity((a) => [
+      { id: `local-${a.length}`, kind, actor: me, title, detail: entryDetail, at: WS_NOW },
+      ...a,
+    ])
+
+  const changeStatus = (next: TicketStatus) => {
+    if (next === status) return
+    log(
+      `${me.name} changed status`,
+      `${STATUS_PICKER_LABEL[status]} → ${STATUS_PICKER_LABEL[next]}`,
+    )
+    setStatus(next)
+    if (next === 'resolved' || next === 'closed') setSnoozed(undefined)
+    toast.success(`Status changed to ${STATUS_PICKER_LABEL[next]}`)
+  }
+
+  const assign = (agent: Agent | undefined) => {
+    if (agent?.id === assignee?.id) return
+    log(
+      agent
+        ? `${me.name} assigned ${agent.id === me.id ? 'themselves' : agent.name}`
+        : `${me.name} unassigned the ticket`,
+      `${assignee?.name ?? 'Unassigned'} → ${agent?.name ?? 'Unassigned'}`,
+    )
+    setAssignee(agent)
+    toast.success(agent ? `Assigned to ${agent.id === me.id ? 'you' : agent.name}` : 'Unassigned')
+  }
+
+  const moveTeam = (next: string) => {
+    log(`${me.name} moved the ticket`, `${team} → ${next}`)
+    setTeam(next)
+    setAssignee(undefined)
+    toast.success(`Moved to ${next}`)
+  }
+
+  const snooze = (until: SnoozeUntil | undefined) => {
+    setSnoozed(until)
+    const label =
+      until && ('reply' in until ? 'the customer replies' : snoozeLabel(until.at, WS_NOW))
+    log(
+      until ? `${me.name} snoozed the ticket` : `${me.name} unsnoozed the ticket`,
+      label && `Until ${label}`,
+    )
+    toast.success(until ? `Snoozed until ${label}` : 'Snooze removed')
+  }
+
+  const index = tickets.findIndex((t) => t.id === ticket.id)
+  const step = (by: number) => {
+    const next = tickets[index + by]
+    if (next) onOpenTicket(next.id)
+  }
+
+  useHotkeys({
+    s: () => setPicker('status'),
+    'shift+a': () => setPicker('assignee'),
+    a: () => assign(me),
+    h: () => !resolved && setPicker('snooze'),
+    e: () => changeStatus(resolved ? 'open' : 'resolved'),
+    j: () => step(1),
+    k: () => step(-1),
+    escape: onBack,
+  })
 
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as TicketTab)} className="contents">
@@ -522,21 +619,42 @@ export function TicketDetailPage({
         header={
           <header className="flex min-h-13 shrink-0 items-start gap-4 px-5 pt-4 pb-3">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <TicketBreadcrumb
-                ticketId={formatTicketId(ticket.id)}
-                status={status}
-                source={detail.source}
-              />
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <TicketBreadcrumb
+                  ticketId={formatTicketId(ticket.id)}
+                  status={status}
+                  source={detail.source}
+                  className="min-w-0"
+                />
+                {snoozed && (
+                  <Badge
+                    variant="info"
+                    icon="clock"
+                    onRemove={() => snooze(undefined)}
+                    removeLabel="Remove snooze"
+                  >
+                    Snoozed until{' '}
+                    {'reply' in snoozed ? 'customer replies' : snoozeLabel(snoozed.at, WS_NOW)}
+                  </Badge>
+                )}
+              </div>
               <h1 className="line-clamp-2 text-heading-2 text-foreground">{ticket.subject}</h1>
             </div>
             <div className="flex shrink-0 items-center gap-1">
-              <Button variant="ghost" shortcut="H" disabled={resolved}>
-                Snooze
-              </Button>
+              <SnoozeMenu
+                now={WS_NOW}
+                onSnooze={snooze}
+                {...pickerProps('snooze')}
+                trigger={
+                  <Button variant="ghost" shortcut="H" disabled={resolved}>
+                    Snooze
+                  </Button>
+                }
+              />
               <Button
                 variant="secondary"
                 shortcut="E"
-                onClick={() => setStatus(resolved ? 'open' : 'resolved')}
+                onClick={() => changeStatus(resolved ? 'open' : 'resolved')}
               >
                 {resolved ? 'Reopen' : 'Resolve'}
               </Button>
@@ -572,7 +690,50 @@ export function TicketDetailPage({
         }
         details={
           <>
-            <DetailsCard ticket={ticket} status={status} detail={detail} />
+            <DetailsCard
+              ticket={ticket}
+              team={team}
+              detail={detail}
+              statusPicker={
+                <StatusPicker
+                  status={status}
+                  onChange={changeStatus}
+                  {...pickerProps('status')}
+                  trigger={
+                    <button type="button" aria-label="Change status" className={pickerTrigger}>
+                      <StatusGlyph status={status} label={null} />
+                      <span className="truncate">{TICKET_STATUS_LABEL[status]}</span>
+                    </button>
+                  }
+                />
+              }
+              assigneePicker={
+                <AssigneePicker
+                  assigneeId={assignee?.id}
+                  team={team}
+                  me={me}
+                  agents={Object.values(wsAgents)
+                    .filter((a) => a.team === team)
+                    .map((agent) => ({ agent, meta: `${openCount(agent.id)} open` }))}
+                  teams={TEAMS}
+                  onAssign={assign}
+                  onTeamChange={moveTeam}
+                  {...pickerProps('assignee')}
+                  trigger={
+                    <button type="button" aria-label="Change assignee" className={pickerTrigger}>
+                      {assignee ? (
+                        <>
+                          <Avatar name={assignee.name} size="xs" aria-hidden />
+                          <span className="truncate">{assignee.name}</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Unassigned</span>
+                      )}
+                    </button>
+                  }
+                />
+              }
+            />
             <CustomerCard ticket={ticket} detail={detail} />
           </>
         }
@@ -587,7 +748,7 @@ export function TicketDetailPage({
           <AttachmentsTab detail={detail} />
         </TabsContent>
         <TabsContent value="timeline">
-          <TimelineTab activity={detail.activity} />
+          <TimelineTab activity={activity} />
         </TabsContent>
       </TicketWorkspaceTemplate>
     </Tabs>

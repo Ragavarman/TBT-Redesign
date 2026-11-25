@@ -33,4 +33,5 @@ export * from './settings-section'
 // 7 · Ticket detail
 export * from './attachment-tile'
 export * from './email-view'
+export * from './ticket-pickers'
 export * from './ticket-timeline'
