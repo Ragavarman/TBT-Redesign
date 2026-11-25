@@ -14,12 +14,17 @@ import {
   Tabs,
   TabsContent,
   TabsList,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   TabsTrigger,
   toast,
 } from '@/components/molecules'
 import {
   AssigneePicker,
   AttachmentTile,
+  Composer,
   ComposerBar,
   EmailView,
   FilterChips,
@@ -33,11 +38,22 @@ import {
   TicketListItem,
   TimelineDay,
   TimelineEntry,
+  type ComposerMode,
+  type ComposerSubmit,
   type SnoozeUntil,
 } from '@/components/organisms'
 import { TicketWorkspaceTemplate } from '@/components/templates'
 import { useHotkeys } from '@/hooks/useHotkeys'
-import { shortAgo, WS_NOW, wsAgents, wsCurrentAgent, wsTickets, wsTicketDetail } from '@/mocks'
+import {
+  shortAgo,
+  WS_NOW,
+  wsAgents,
+  wsCannedReplies,
+  wsCurrentAgent,
+  wsMentionables,
+  wsTickets,
+  wsTicketDetail,
+} from '@/mocks'
 import { cn } from '@/lib/utils'
 import {
   formatBytes,
@@ -163,11 +179,30 @@ function TicketListPanel({
 
 /* ── Conversation tab ──────────────────────────────────────────────────────────────── */
 
+/** Message text with line breaks kept and @mentions picked out. */
+function Body({ text }: { text: string }) {
+  const names = wsMentionables.map((m) => m.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const parts = text.split(new RegExp(`(@(?:${names.join('|')}))`, 'g'))
+  return (
+    <p className="text-body whitespace-pre-line text-foreground">
+      {parts.map((p, i) =>
+        i % 2 === 1 ? (
+          <span key={i} className="rounded-xs bg-primary/10 px-0.5 text-primary">
+            {p}
+          </span>
+        ) : (
+          p
+        ),
+      )}
+    </p>
+  )
+}
+
 function Message({ message }: { message: TicketMessage }) {
   if (message.from === 'note') {
     return (
       <InternalNote author={message.author} timeLabel={clock(message.at)}>
-        {message.body}
+        <Body text={message.body} />
       </InternalNote>
     )
   }
@@ -193,20 +228,33 @@ function Message({ message }: { message: TicketMessage }) {
           {clock(message.at)}
         </time>
       </header>
-      <p className="text-body text-foreground">{message.body}</p>
+      <Body text={message.body} />
+      {message.attachments && message.attachments.length > 0 && (
+        <ul aria-label="Attachments" className="flex flex-wrap gap-2">
+          {message.attachments.map((a) => (
+            <li
+              key={a.name}
+              className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-small text-foreground"
+            >
+              <Icon name="paperclip" size={14} className="text-muted-foreground" />
+              {a.name} · {formatBytes(a.size)}
+            </li>
+          ))}
+        </ul>
+      )}
     </article>
   )
 }
 
 function ConversationTab({ messages }: { messages: TicketMessage[] }) {
-  // oldest first, like a chat thread — and open at the newest message
+  // oldest first, like a chat thread — and open at (and follow) the newest message
   const groups = byDay([...messages].sort((a, b) => a.at.localeCompare(b.at)))
   const end = useRef<HTMLDivElement>(null)
   useEffect(() => {
     // scroll only the panel body (scrollIntoView could also nudge the app shell)
     const body = end.current?.closest<HTMLElement>('[data-slot=panel-body]')
     if (body) body.scrollTop = body.scrollHeight
-  }, [])
+  }, [messages.length])
   return (
     <div ref={end} className="flex flex-col gap-6 px-8 py-6">
       {groups.map((g) => (
@@ -496,6 +544,10 @@ export interface TicketDetailPageProps {
   initialTab?: TicketTab
   /** Open a picker on load (stories: Figma X1 / X2 / X5). */
   initialPicker?: Picker
+  /** Open the composer on load (stories: Figma X6 / X7). */
+  initialComposer?: ComposerMode
+  /** Text already typed in that composer, e.g. "/print" to show the canned-reply menu. */
+  initialComposerText?: string
   onBack: () => void
   onOpenTicket: (id: number) => void
 }
@@ -518,6 +570,8 @@ export function TicketDetailPage({
   ticket,
   initialTab = 'conversation',
   initialPicker,
+  initialComposer,
+  initialComposerText,
   onBack,
   onOpenTicket,
 }: TicketDetailPageProps) {
@@ -536,11 +590,16 @@ export function TicketDetailPage({
   const [team, setTeam] = useState(ticket.team)
   const [snoozed, setSnoozed] = useState<SnoozeUntil>()
   const [activity, setActivity] = useState<TicketActivity[]>(detail.activity)
+  const [messages, setMessages] = useState<TicketMessage[]>(detail.messages)
   const resolved = status === 'resolved' || status === 'closed'
+
+  // Local changes are stamped a second apart from the workspace's "now", so they sort in order.
+  const seq = useRef(0)
+  const stamp = () => new Date(Date.parse(WS_NOW) + ++seq.current * 1000).toISOString()
 
   const log = (title: string, entryDetail?: string, kind: TicketActivityKind = 'status') =>
     setActivity((a) => [
-      { id: `local-${a.length}`, kind, actor: me, title, detail: entryDetail, at: WS_NOW },
+      { id: `local-a${seq.current}`, kind, actor: me, title, detail: entryDetail, at: stamp() },
       ...a,
     ])
 
@@ -585,6 +644,55 @@ export function TicketDetailPage({
     toast.success(until ? `Snoozed until ${label}` : 'Snooze removed')
   }
 
+  // The composer: closed (the bar) or open in a mode. Opening jumps to the Conversation tab.
+  const [composer, setComposer] = useState<{ mode: ComposerMode; text?: string } | null>(
+    initialComposer ? { mode: initialComposer, text: initialComposerText } : null,
+  )
+  const compose = (mode: ComposerMode, text?: string) => {
+    setTab('conversation')
+    setComposer({ mode, text })
+  }
+
+  const submit = (p: ComposerSubmit) => {
+    const at = stamp()
+    const quote = (s: string) => `“${s.length > 60 ? `${s.slice(0, 60)}…` : s}”`
+    if (p.mode === 'reply') {
+      const files = p.attachments.map(({ name, size }) => ({ name, size }))
+      setMessages((m) => [
+        ...m,
+        {
+          id: `local-m${seq.current}`,
+          author: me,
+          from: 'agent',
+          via: 'Email',
+          body: p.body,
+          attachments: files,
+          at,
+        },
+      ])
+      log(`${me.name} replied by email`, quote(p.body), 'message')
+      if (p.setWaiting) changeStatus('waiting')
+      toast.success(`Reply sent to ${ticket.requester.name}`)
+    } else if (p.mode === 'note') {
+      setMessages((m) => [
+        ...m,
+        { id: `local-m${seq.current}`, author: me, from: 'note', body: p.body, at },
+      ])
+      log(`${me.name} added an internal note`, quote(p.body), 'note')
+      const who = [...new Set(p.mentions.map((x) => x.name))]
+      toast.success(who.length ? `Note added · ${who.join(', ')} notified` : 'Note added')
+    } else {
+      const dir = p.direction === 'outbound' ? 'Call to' : 'Call from'
+      log(
+        `${dir} ${ticket.requester.phone ?? ticket.requester.name}`,
+        [p.duration, p.body].filter(Boolean).join(' · '),
+        'call',
+      )
+      toast.success('Call logged')
+    }
+    setComposer(null)
+  }
+
   const index = tickets.findIndex((t) => t.id === ticket.id)
   const step = (by: number) => {
     const next = tickets[index + by]
@@ -592,6 +700,9 @@ export function TicketDetailPage({
   }
 
   useHotkeys({
+    r: () => compose('reply'),
+    n: () => compose('note'),
+    '/': () => compose('reply', '/'),
     s: () => setPicker('status'),
     'shift+a': () => setPicker('assignee'),
     a: () => assign(me),
@@ -672,21 +783,63 @@ export function TicketDetailPage({
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
         }
+        composerLayout={composer ? 'docked' : 'floating'}
         composer={
-          <ComposerBar>
-            <Button variant="ghost" leadingIcon="reply" shortcut="R">
-              Reply
-            </Button>
-            <Button variant="ghost" leadingIcon="pencil" shortcut="N">
-              Note
-            </Button>
-            <Button variant="ghost" leadingIcon="chat" shortcut="/">
-              Canned reply
-            </Button>
-            <Button variant="ghost" leadingIcon="dots">
-              More
-            </Button>
-          </ComposerBar>
+          composer ? (
+            <Composer
+              mode={composer.mode}
+              onModeChange={(mode) => setComposer((c) => ({ ...c, mode }))}
+              initialText={composer.text}
+              to={`${ticket.requester.name} <${ticket.requester.email}>`}
+              cannedReplies={wsCannedReplies}
+              mentionables={wsMentionables.filter((m) => m.id !== me.id)}
+              signature={`Signature: ${me.name}`}
+              onSubmit={submit}
+              onClose={() => setComposer(null)}
+            />
+          ) : (
+            <ComposerBar>
+              <Button
+                variant="ghost"
+                leadingIcon="reply"
+                shortcut="R"
+                onClick={() => compose('reply')}
+              >
+                Reply
+              </Button>
+              <Button
+                variant="ghost"
+                leadingIcon="pencil"
+                shortcut="N"
+                onClick={() => compose('note')}
+              >
+                Note
+              </Button>
+              <Button
+                variant="ghost"
+                leadingIcon="chat"
+                shortcut="/"
+                onClick={() => compose('reply', '/')}
+              >
+                Canned reply
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" leadingIcon="dots">
+                    More
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="top" align="end">
+                  <DropdownMenuItem icon="phone" onSelect={() => compose('call')}>
+                    Log a call
+                  </DropdownMenuItem>
+                  <DropdownMenuItem icon="external" disabled>
+                    Forward
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </ComposerBar>
+          )
         }
         details={
           <>
@@ -739,7 +892,7 @@ export function TicketDetailPage({
         }
       >
         <TabsContent value="conversation">
-          <ConversationTab messages={detail.messages} />
+          <ConversationTab messages={messages} />
         </TabsContent>
         <TabsContent value="email" className="h-full">
           <EmailTab detail={detail} />

@@ -47,5 +47,24 @@ export const AssigneePicker: Story = { args: { initialPicker: 'assignee' } }
 /** Figma X5 · Snooze menu open (H): presets, or a day and time. */
 export const Snooze: Story = { args: { initialPicker: 'snooze' } }
 
+/** Figma X6 · Email reply open (R) with the "/" canned-reply menu: ↑ ↓, Enter inserts. */
+export const ReplyCannedMenu: Story = {
+  args: { initialComposer: 'reply', initialComposerText: 'Hi Dennis,\n/print' },
+}
+
+/** The open reply, empty: To / Cc / Bcc, formatting, attach, Send or Send & set Waiting. */
+export const Reply: Story = { args: { initialComposer: 'reply' } }
+
+/** Figma X7 · Internal note (N) with the "@" mention menu. */
+export const NoteMention: Story = {
+  args: {
+    initialComposer: 'note',
+    initialComposerText: 'Can you check the firmware on this one @ar',
+  },
+}
+
+/** More → Log a call. */
+export const CallLog: Story = { args: { initialComposer: 'call' } }
+
 /** A ticket with only generated detail (no email, no files). */
 export const SparseTicket: Story = { args: { ticket: wsTickets[3]!, initialTab: 'timeline' } }

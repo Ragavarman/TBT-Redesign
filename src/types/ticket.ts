@@ -121,6 +121,8 @@ export interface TicketMessage {
   /** How it arrived, e.g. "Email", "Voicemail · 0:48". */
   via?: string
   body: string
+  /** Files sent with a reply. */
+  attachments?: { name: string; size: number }[]
   at: string
 }
 

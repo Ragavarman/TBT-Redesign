@@ -1,3 +1,4 @@
+import type { CannedReply, Mentionable } from '@/components/organisms'
 import type { Ticket, TicketChannel, TicketDetail } from '@/types'
 import { wsAgents, wsCustomers, wsTickets } from './workspace'
 
@@ -235,3 +236,43 @@ export function wsTicketDetail(id: number): TicketDetail | undefined {
   const ticket = wsTickets.find((t) => t.id === id)
   return ticket && generated(ticket)
 }
+
+/** Canned replies — typed as "/shortcut" in a reply (Figma X6). */
+export const wsCannedReplies: CannedReply[] = [
+  {
+    id: 'c1',
+    shortcut: 'printer',
+    title: 'Printer offline — first steps',
+    body: 'Could you try these steps while we check from our side?\n1. Turn the printer off and unplug it for 30 seconds.\n2. Plug it back in and wait for the green light.\n3. In the POS, open Settings → Devices and press “Reconnect”.\nLet us know if it still shows Offline.',
+  },
+  {
+    id: 'c2',
+    shortcut: 'shipped',
+    title: 'Printer replacement shipped',
+    body: 'Good news — a replacement printer is on its way and should arrive within 2 business days. We’ll send the tracking number as soon as we have it.',
+  },
+  {
+    id: 'c3',
+    shortcut: 'test',
+    title: 'Print a test receipt',
+    body: 'Could you print a test receipt from Settings → Devices → Printer → “Print test page” and send us a photo of the result?',
+  },
+  {
+    id: 'c4',
+    shortcut: 'thanks',
+    title: 'Thanks for your patience',
+    body: 'Thanks for your patience while we looked into this.',
+  },
+]
+
+/** Who a note can @mention (Figma X7). */
+export const wsMentionables: Mentionable[] = [
+  ...Object.values(wsAgents).map((a) => ({
+    id: a.id,
+    name: a.name,
+    meta: a.team.replace(/^Support Team /, 'Support '),
+    kind: 'agent' as const,
+  })),
+  { id: 'team-beta', name: 'Technical Team Beta', meta: 'team', kind: 'team' },
+  { id: 'team-gamma', name: 'Sales Team Gamma', meta: 'team', kind: 'team' },
+]
