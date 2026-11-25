@@ -43,6 +43,9 @@ export const SLA_STATE_LABEL: Record<SlaState, string> = {
   breached: 'Breached',
 }
 
+/** Display id used across the interface (Figma: "T-221"). */
+export const formatTicketId = (id: number) => `T-${id}`
+
 export type TicketChannel = 'email' | 'chat' | 'phone' | 'portal'
 
 export interface TicketSla {
@@ -52,7 +55,7 @@ export interface TicketSla {
 }
 
 export interface Ticket {
-  /** Display number, e.g. 4821 → "#4821". */
+  /** Ticket number, e.g. 221. Display it with formatTicketId → "T-221". */
   id: number
   subject: string
   /** First line of the latest message, for list previews. */

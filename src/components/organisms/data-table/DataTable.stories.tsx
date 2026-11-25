@@ -12,7 +12,7 @@ import {
   TicketStatusBadge,
 } from '@/components/molecules'
 import { ago, assets, customers, tickets } from '@/mocks'
-import type { Asset, Customer, Ticket } from '@/types'
+import { formatTicketId, type Asset, type Customer, type Ticket } from '@/types'
 import { MutedCell, PersonCell, TwoLineCell } from './cells'
 import type { RowSelectionState } from '@tanstack/react-table'
 import { DataTable } from './DataTable'
@@ -30,7 +30,7 @@ const ticketColumns = t.columns([
             {row.original.subject}
           </span>
         }
-        secondary={`#${row.original.id} · ${row.original.requester.name}`}
+        secondary={`${formatTicketId(row.original.id)} · ${row.original.requester.name}`}
       />
     ),
   }),

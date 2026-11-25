@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { Avatar, PriorityGlyph, StatusGlyph } from '@/components/atoms'
 import { cn } from '@/lib/utils'
-import type { Ticket } from '@/types'
+import { formatTicketId, type Ticket } from '@/types'
 
 export interface TicketRowProps extends Omit<ComponentProps<'button'>, 'children'> {
   ticket: Ticket
@@ -43,7 +43,7 @@ export function TicketRow({
         {ticket.requester.name}
       </span>
       <span className="w-13 shrink-0 text-small text-muted-foreground tabular-nums">
-        #{ticket.id}
+        {formatTicketId(ticket.id)}
       </span>
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
         <span

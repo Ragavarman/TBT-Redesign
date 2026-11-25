@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react'
 import { Avatar, StatusGlyph } from '@/components/atoms'
 import { PriorityBadge } from '@/components/molecules'
 import { cn } from '@/lib/utils'
-import type { Ticket } from '@/types'
+import { formatTicketId, type Ticket } from '@/types'
 
 export interface TicketListItemProps extends Omit<ComponentProps<'button'>, 'children'> {
   ticket: Ticket
@@ -66,7 +66,7 @@ export function TicketListItem({
         <span className="shrink-0 text-caption text-muted-foreground">{timeLabel}</span>
       </span>
       <span className="flex min-w-0 items-center gap-1.5 text-caption text-muted-foreground">
-        <span className="shrink-0">#{ticket.id}</span>
+        <span className="shrink-0">{formatTicketId(ticket.id)}</span>
         <span aria-hidden>·</span>
         <span className="min-w-0 flex-1 truncate">{ticket.requester.name}</span>
         <PriorityBadge priority={ticket.priority} />

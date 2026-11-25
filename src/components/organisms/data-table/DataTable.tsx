@@ -67,6 +67,11 @@ export interface DataTableProps<TData extends RowData> {
   rowActions?: (row: TData) => ReactNode
   /** Noun for the range text: "1–25 of 67 tickets". */
   itemLabel?: string
+  /**
+   * card — bordered, rounded, muted header (default) ·
+   * flush — edge to edge inside a panel: no outer border, card-coloured sticky header (Figma Interface · Table view).
+   */
+  appearance?: 'card' | 'flush'
   className?: string
 }
 
@@ -106,6 +111,7 @@ export function DataTable<TData extends RowData>({
   onRowClick,
   rowActions,
   itemLabel,
+  appearance = 'card',
   className,
 }: DataTableProps<TData>) {
   const [selectionState, setSelectionState] = useState<RowSelectionState>({})
@@ -211,10 +217,20 @@ export function DataTable<TData extends RowData>({
   return (
     <div
       data-slot="data-table"
-      className={cn('overflow-hidden rounded-xl border bg-card', className)}
+      data-appearance={appearance}
+      className={cn(
+        'bg-card',
+        appearance === 'card' && 'overflow-hidden rounded-xl border',
+        appearance === 'flush' &&
+          // 16px page gutter on the outer columns; the checkbox column lines up with the bulk strip
+          '[&_[data-slot=table-container]]:overflow-visible [&_tr>*:first-child]:ps-4 [&_tr>*:first-child]:text-left [&_tr>*:last-child]:pe-4',
+        className,
+      )}
     >
       <Table aria-label={label} aria-busy={loading || undefined}>
-        <TableHeader>
+        <TableHeader
+          className={cn(appearance === 'flush' && 'sticky top-0 z-10 bg-card [&_th]:h-10')}
+        >
           {t.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => {

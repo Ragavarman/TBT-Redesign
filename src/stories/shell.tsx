@@ -3,8 +3,9 @@
  * and a labelled placeholder that marks a template slot. Not part of the library.
  */
 import { useState, type ReactNode } from 'react'
+import { IconButton } from '@/components/atoms'
 import { Sidebar } from '@/components/organisms'
-import { currentAgent, moduleNav, railFooterModules, railModules } from '@/mocks'
+import { moduleNav, railFooterModules, railModules, wsCurrentAgent } from '@/mocks'
 import { cn } from '@/lib/utils'
 
 export function MockSidebar({
@@ -32,10 +33,17 @@ export function MockSidebar({
           setModule(m.id)
           setActive(next.sections[0]?.items[0]?.id ?? '')
         },
-        user: { name: currentAgent.name, presence: currentAgent.presence },
+        user: { name: wsCurrentAgent.name, presence: wsCurrentAgent.presence },
       }}
       nav={{
         title: nav.title,
+        actions:
+          module === 'inbox' ? (
+            <>
+              <IconButton icon="search" label="Search" size="sm" />
+              <IconButton icon="plus" label="New ticket" size="sm" />
+            </>
+          ) : undefined,
         sections: nav.sections,
         activeId: active,
         onSelect: (item) => setActive(item.id),
