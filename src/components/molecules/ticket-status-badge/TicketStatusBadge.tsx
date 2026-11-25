@@ -16,7 +16,7 @@ const PILL: Record<TicketStatus, string> = {
 export interface TicketStatusBadgeProps extends Omit<ComponentProps<'span'>, 'children'> {
   status: TicketStatus
   /**
-   * glyph — 14px glyph only (dense tables; has an accessible label) ·
+   * glyph — 16px glyph only (dense tables; has an accessible label) ·
    * label — glyph + Small label (default) · pill — tinted capsule, Caption label.
    */
   variant?: 'glyph' | 'label' | 'pill'
@@ -38,7 +38,7 @@ export function TicketStatusBadge({
         className={cn('inline-flex', className)}
         {...props}
       >
-        <StatusGlyph status={status} />
+        <StatusGlyph status={status} size={16} />
       </span>
     )
   }
@@ -49,14 +49,14 @@ export function TicketStatusBadge({
       className={cn(
         'inline-flex shrink-0 items-center whitespace-nowrap',
         variant === 'label' && 'gap-1.5 text-small text-foreground',
-        // optical padding (Caption + --py → 22px); the 14px glyph is pulled to the edge
+        // optical padding (Caption + --py → 22px); the 16px glyph is pulled to the edge
         variant === 'pill' &&
-          cn('optical-edges rounded-full optical [--icon:0.875rem]', CAPTION.md, PILL[status]),
+          cn('optical-edges rounded-full optical [--icon:1rem]', CAPTION.md, PILL[status]),
         className,
       )}
       {...props}
     >
-      <StatusGlyph status={status} label={null} />
+      <StatusGlyph status={status} size={16} label={null} />
       <span>{label}</span>
     </span>
   )

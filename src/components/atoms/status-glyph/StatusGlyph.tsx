@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react'
+import { rem } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { TICKET_STATUS_LABEL, type TicketStatus } from '@/types'
 
@@ -93,7 +94,14 @@ export interface StatusGlyphProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
   label?: string | null
 }
 
-export function StatusGlyph({ status, size = 14, label, className, ...props }: StatusGlyphProps) {
+export function StatusGlyph({
+  status,
+  size = 14,
+  label,
+  className,
+  style,
+  ...props
+}: StatusGlyphProps) {
   const g = GLYPHS[status]
   const name = label === undefined ? TICKET_STATUS_LABEL[status] : label
   return (
@@ -101,6 +109,8 @@ export function StatusGlyph({ status, size = 14, label, className, ...props }: S
       viewBox="0 0 14 14"
       width={size}
       height={size}
+      // Figma px → rem so the glyph grows with the UI scale
+      style={{ width: rem(size), height: rem(size), ...style }}
       fill="none"
       role={name ? 'img' : undefined}
       aria-label={name ?? undefined}

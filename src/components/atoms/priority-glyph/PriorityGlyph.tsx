@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react'
+import { rem } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { TICKET_PRIORITY_LABEL, type TicketPriority } from '@/types'
 
@@ -26,6 +27,7 @@ export function PriorityGlyph({
   size = 14,
   label,
   className,
+  style,
   ...props
 }: PriorityGlyphProps) {
   const name = label === undefined ? `${TICKET_PRIORITY_LABEL[priority]} priority` : label
@@ -34,6 +36,8 @@ export function PriorityGlyph({
       viewBox="0 0 14 14"
       width={size}
       height={size}
+      // Figma px → rem so the glyph grows with the UI scale
+      style={{ width: rem(size), height: rem(size), ...style }}
       fill="none"
       role={name ? 'img' : undefined}
       aria-label={name ?? undefined}
