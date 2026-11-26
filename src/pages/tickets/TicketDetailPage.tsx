@@ -43,6 +43,7 @@ import {
   TicketListItem,
   TimelineDay,
   TimelineEntry,
+  type CannedReply,
   type ComposerMode,
   type ComposerSubmit,
   type InvoiceSubmit,
@@ -619,6 +620,8 @@ export interface TicketDetailPageProps {
   onOpenTicket: (id: number) => void
   /** Customer card name → their profile. */
   onOpenCustomer?: () => void
+  /** "/" suggestions in the reply; defaults to the mock set (the app passes Knowledge's). */
+  cannedReplies?: CannedReply[]
 }
 
 type Picker = 'status' | 'assignee' | 'snooze'
@@ -656,6 +659,7 @@ export function TicketDetailPage({
   onBack,
   onOpenTicket,
   onOpenCustomer,
+  cannedReplies = wsCannedReplies,
 }: TicketDetailPageProps) {
   const baseDetail = wsTicketDetail(ticket.id) ?? wsGeneratedDetail(ticket)
   const me = wsCurrentAgent
@@ -1131,7 +1135,7 @@ export function TicketDetailPage({
               onModeChange={(mode) => setComposer((c) => ({ ...c, mode }))}
               initialText={composer.text}
               to={`${ticket.requester.name} <${ticket.requester.email}>`}
-              cannedReplies={wsCannedReplies}
+              cannedReplies={cannedReplies}
               mentionables={wsMentionables.filter((m) => m.id !== me.id)}
               signature={`Signature: ${me.name}`}
               onSubmit={submit}

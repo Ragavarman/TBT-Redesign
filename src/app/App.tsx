@@ -9,8 +9,11 @@ import { TicketsTablePage } from '@/pages/tickets/TicketsTablePage'
 import type { SavedView } from '@/pages/tickets/ticket-view'
 import { AppSidebar } from './AppSidebar'
 import { CustomerRoute, CustomersViewRoute } from './CustomerRoutes'
+import { CollectionsProvider } from './CollectionsProvider'
 import { CustomersRoot } from './CustomersRoot'
+import { KnowledgeViewRoute, NoteRoute } from './KnowledgeRoutes'
 import { ReportsViewRoute } from './ReportRoutes'
+import { useCannedReplies } from './stores'
 import {
   defaultView,
   findNavItem,
@@ -93,6 +96,10 @@ function ViewRoute() {
   }
 
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+  if (module === 'knowledge') {
+    const page = <KnowledgeViewRoute view={view} />
+    if (page) return page
+  }
   if (module === 'reports') {
     const page = <ReportsViewRoute view={view} />
     if (page) return page
@@ -110,12 +117,20 @@ function ViewRoute() {
   )
 }
 
+/** /:module/:view/:id — record pages: a knowledge note, an inventory item, an agent, a team… */
+function DetailRoute() {
+  const { module, view, id = '' } = useParams()
+  if (module === 'knowledge' && view === 'notes') return <NoteRoute id={id} />
+  return <Navigate to={`/${module}/${view}`} replace />
+}
+
 /** /inbox/:view/T-222 — a ticket opened from a view; the list panel shows that view. */
 function TicketRoute() {
   const { view = 'all', ticketId } = useParams()
   const navigate = useNavigate()
   const { views } = useSavedViews()
   const { tickets: all } = useWorkspace()
+  const canned = useCannedReplies()
   const id = parseTicketId(ticketId)
   const tickets = ticketsForView(view, views, all)
   const ticket = tickets.find((t) => t.id === id)
@@ -134,6 +149,12 @@ function TicketRoute() {
       onBack={() => navigate(viewPath('inbox', view))}
       onOpenTicket={(next) => navigate(ticketPath(view, next))}
       onOpenCustomer={() => navigate(`/customers/all/${ticket.requester.id}`)}
+      cannedReplies={canned.items.map((c) => ({
+        id: c.id,
+        shortcut: c.shortcut,
+        title: c.name,
+        body: c.message,
+      }))}
     />
   )
 }
@@ -148,6 +169,7 @@ const router = createBrowserRouter([
           { path: '/', element: <Navigate to="/inbox/all" replace /> },
           { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
           { path: '/customers/:view/:customerId', element: <CustomerRoute /> },
+          { path: '/:module/:view/:id', element: <DetailRoute /> },
           { path: '/:module/:view?', element: <ViewRoute /> },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
@@ -160,7 +182,9 @@ export function App() {
   return (
     <ThemeProvider>
       <SavedViewsProvider>
-        <RouterProvider router={router} />
+        <CollectionsProvider>
+          <RouterProvider router={router} />
+        </CollectionsProvider>
       </SavedViewsProvider>
       <Toaster />
     </ThemeProvider>
