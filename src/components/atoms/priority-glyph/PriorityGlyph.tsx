@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils'
 import { TICKET_PRIORITY_LABEL, type TicketPriority } from '@/types'
 
 const BARS = [
-  { x: 1.5, y: 10, h: 4 },
-  { x: 5.75, y: 7, h: 7 },
-  { x: 10, y: 4, h: 10 },
+  { x: 1.5, y: 8, h: 4 },
+  { x: 5.75, y: 5, h: 7 },
+  { x: 10, y: 2, h: 10 },
 ] as const
 const FILLED: Record<Exclude<TicketPriority, 'urgent'>, number> = { low: 1, medium: 2, high: 3 }
 
