@@ -14,6 +14,7 @@ import { CustomersRoot } from './CustomersRoot'
 import { InventoryViewRoute, ItemRoute } from './InventoryRoutes'
 import { KnowledgeViewRoute, NoteRoute } from './KnowledgeRoutes'
 import { ReportsViewRoute } from './ReportRoutes'
+import { TeamDetailRoute, TeamViewRoute } from './TeamRoutes'
 import { useCannedReplies } from './stores'
 import {
   defaultView,
@@ -97,6 +98,10 @@ function ViewRoute() {
   }
 
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+  if (module === 'team') {
+    const page = <TeamViewRoute view={view} />
+    if (page) return page
+  }
   if (module === 'inventory') {
     const page = <InventoryViewRoute view={view} />
     if (page) return page
@@ -127,6 +132,8 @@ function DetailRoute() {
   const { module, view, id = '' } = useParams()
   if (module === 'knowledge' && view === 'notes') return <NoteRoute id={id} />
   if (module === 'inventory' && view === 'items') return <ItemRoute id={id} />
+  if (module === 'team' && (view === 'agents' || view === 'teams'))
+    return <TeamDetailRoute view={view} id={id} />
   return <Navigate to={`/${module}/${view}`} replace />
 }
 

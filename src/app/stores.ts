@@ -1,12 +1,20 @@
 import {
   wsBrands,
   wsCannedReplyRecords,
+  wsInvites,
+  wsPermissions,
+  wsTeamMembers,
+  wsTeams,
   wsCategories,
   wsInventoryItems,
   wsLocations,
   wsNotes,
   wsSmsThreads,
   type CannedReplyRecord,
+  type Invite,
+  type PermissionRow,
+  type Team,
+  type TeamMember,
   type InventoryBrand,
   type InventoryCategory,
   type InventoryItem,
@@ -29,3 +37,8 @@ export const useInventoryItems = () => useCollection<InventoryItem>('inv-items',
 export const useBrands = () => useCollection<InventoryBrand>('inv-brands', wsBrands)
 export const useCategories = () => useCollection<InventoryCategory>('inv-categories', wsCategories)
 export const useLocations = () => useCollection<InventoryLocation>('inv-locations', wsLocations)
+
+export const useTeamMembers = () => useCollection<TeamMember>('team-members', wsTeamMembers)
+export const useTeams = () => useCollection<Team>('teams', wsTeams)
+export const usePermissions = () => useCollection<PermissionRow>('permissions', wsPermissions)
+export const useInvites = () => useCollection<Invite>('invites', wsInvites)
