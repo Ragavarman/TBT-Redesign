@@ -51,8 +51,8 @@ export function ThemeProvider({
   const resolvedMode: Mode = settings.mode === 'system' ? system : settings.mode
 
   useEffect(() => {
-    applyTheme({ mode: resolvedMode, accent: settings.accent, base: settings.base })
-  }, [resolvedMode, settings.accent, settings.base])
+    applyTheme({ ...settings, mode: resolvedMode })
+  }, [resolvedMode, settings])
 
   useEffect(() => {
     if (storageKey) saveSettings(storageKey, settings)
@@ -65,8 +65,10 @@ export function ThemeProvider({
       setMode: (mode) => setSettings((s) => ({ ...s, mode })),
       setAccent: (accent) => setSettings((s) => ({ ...s, accent })),
       setBase: (base) => setSettings((s) => ({ ...s, base })),
+      update: (patch) => setSettings((s) => ({ ...s, ...patch })),
+      reset: () => setSettings({ ...DEFAULT_SETTINGS, ...defaultSettings }),
     }),
-    [settings, resolvedMode],
+    [settings, resolvedMode, defaultSettings],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

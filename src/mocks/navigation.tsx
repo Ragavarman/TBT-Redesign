@@ -224,6 +224,7 @@ export const moduleNav: Record<string, { title: string; sections: NavSection[] }
           { id: 'profile', label: 'Profile', icon: 'customers' },
           { id: 'security', label: 'Security', icon: 'settings' },
           { id: 'notifications', label: 'Notifications', icon: 'bell' },
+          { id: 'appearance', label: 'Appearance', icon: 'display' },
         ],
       },
       {

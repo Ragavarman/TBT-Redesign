@@ -17,6 +17,8 @@ import {
   type TicketField,
 } from '@/mocks'
 import { NotificationsPage, ProfilePage, SecurityPage } from '@/pages/settings/AccountPages'
+import { AppearancePage } from '@/pages/settings/AppearancePage'
+import { useTheme } from '@/lib/theme'
 import { RoutingRuleSheet } from '@/pages/settings/RoutingRuleSheet'
 import { Footnote, SettingsPage, SettingsTable } from '@/pages/settings/SettingsKit'
 import {
@@ -120,6 +122,8 @@ export function SettingsViewRoute({ view }: { view: string }) {
       return <SecurityRoute sidebar={sidebar} />
     case 'notifications':
       return <NotificationsRoute sidebar={sidebar} />
+    case 'appearance':
+      return <AppearanceRoute sidebar={sidebar} />
     case 'general':
       return <GeneralRoute sidebar={sidebar} />
     case 'applications':
@@ -145,6 +149,19 @@ export function SettingsViewRoute({ view }: { view: string }) {
 }
 
 type R = { sidebar: ReactNode }
+
+/** S14 — reads and writes the live theme, so every change shows at once (and is remembered). */
+function AppearanceRoute({ sidebar }: R) {
+  const { mode, accent, base, radius, headingFont, bodyFont, update, reset } = useTheme()
+  return (
+    <AppearancePage
+      sidebar={sidebar}
+      value={{ mode, accent, base, radius, headingFont, bodyFont }}
+      onChange={update}
+      onReset={reset}
+    />
+  )
+}
 
 function ProfileRoute({ sidebar }: R) {
   const [doc, save] = useProfileDoc()
