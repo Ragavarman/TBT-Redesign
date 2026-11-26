@@ -1,0 +1,213 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "import"],
+  "ignorePatterns": ["dist", "storybook-static"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "cn",
+            "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": {
+        "react/only-export-components": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/atoms",
+                  "**/atoms/**",
+                  "**/molecules",
+                  "**/molecules/**",
+                  "**/organisms",
+                  "**/organisms/**",
+                  "**/templates",
+                  "**/templates/**",
+                  "**/pages",
+                  "**/pages/**"
+                ],
+                "message": "Layer rule: ui/ (shadcn primitives) must not import from atomic layers or pages."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/atoms/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/molecules",
+                  "**/molecules/**",
+                  "**/organisms",
+                  "**/organisms/**",
+                  "**/templates",
+                  "**/templates/**",
+                  "**/pages",
+                  "**/pages/**"
+                ],
+                "message": "Layer rule: atoms may only import from ui/, lib/, types/ and other atoms."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/molecules/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/organisms",
+                  "**/organisms/**",
+                  "**/templates",
+                  "**/templates/**",
+                  "**/pages",
+                  "**/pages/**"
+                ],
+                "message": "Layer rule: molecules may only import from atoms (and below)."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/organisms/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/templates", "**/templates/**", "**/pages", "**/pages/**"],
+                "message": "Layer rule: organisms may only import from molecules and atoms (and below)."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/templates/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/pages", "**/pages/**"],
+                "message": "Layer rule: templates must not import from pages."
+              },
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "Mock data is for stories only — pass data in through props."
+              }
+            ],
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [".storybook/**", "**/*.stories.tsx", "src/foundations/**"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["src/lib/utils.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["**/*.stories.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "cn",
+                "message": "Import cn from \"@/lib/utils\" (it knows the TBT text/shadow tokens)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+/* Extra typefaces for Settings › Appearance. Only @font-face rules — files load when used. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/source-serif-4';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* Figma tokens (generated — run `npm run tokens`). Primitives, bases, accents, Light/Dark, type, radius, elevation. */
+@import './tokens.css';
+
+/* `dark:` matches the .dark element itself and everything inside it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Map semantic CSS variables to Tailwind utilities (bg-primary, text-muted-foreground, …). */
+@theme inline {
+  /* Typefaces come from --app-font-body / --app-font-heading (set by ThemeProvider from
+     Settings › Appearance; defaults in :root below). */
+  --font-sans: var(--app-font-body);
+  --font-heading: var(--app-font-heading);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Status — each has a solid and a soft (tinted background) variant. */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-neutral: var(--chart-neutral);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Neutral scale of the active base (bg-base-100, border-base-300, …). */
+  --color-base-50: var(--base-50);
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-400: var(--base-400);
+  --color-base-500: var(--base-500);
+  --color-base-600: var(--base-600);
+  --color-base-700: var(--base-700);
+  --color-base-800: var(--base-800);
+  --color-base-900: var(--base-900);
+  --color-base-950: var(--base-950);
+}
+
+@theme {
+  /* Control heights (Figma 04 · Control heights): h-control-sm / md / lg. */
+  --spacing-control-sm: 1.75rem; /* 28px */
+  --spacing-control-md: 2rem; /* 32px — default */
+  --spacing-control-lg: 2.25rem; /* 36px */
+}
+
+/* Corner roundness follows Settings › Appearance › Border radius ([data-radius] on <html>).
+   Every radius token is scaled from the Small default (6px), so None flattens everything and
+   Large rounds it. rounded-full is untouched. */
+@theme {
+  --radius-xs: calc(0.25rem * var(--radius-scale));
+  --radius-sm: calc(0.375rem * var(--radius-scale));
+  --radius-md: calc(0.5rem * var(--radius-scale));
+  --radius-lg: calc(0.625rem * var(--radius-scale));
+  --radius-xl: calc(0.75rem * var(--radius-scale));
+  --radius-2xl: calc(0.875rem * var(--radius-scale));
+}
+
+:root {
+  --radius-scale: 1;
+  --app-font-body: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --app-font-heading: var(--app-font-body);
+  /* shadcn components reference --radius; Figma radius/lg = 10px. */
+  --radius: calc(0.625rem * var(--radius-scale));
+  /* Inter cap height ÷ em (capHeight 1490 / unitsPerEm 2048). Fallback for browsers without `cap`. */
+  --cap-ratio: 0.727;
+  /* Neutral data series (e.g. "Created" beside success "Resolved"). Lighter than muted-foreground
+     so it stays CVD-separable from the status greens (dataviz validator: deutan ΔE ≥ 8). */
+  --chart-neutral: var(--base-400);
+}
+
+.dark {
+  --chart-neutral: var(--base-600);
+}
+
+[data-radius='none'] {
+  --radius-scale: 0;
+}
+[data-radius='medium'] {
+  --radius-scale: calc(10 / 6);
+}
+[data-radius='large'] {
+  --radius-scale: calc(14 / 6);
+}
+
+/* ── Optical padding ──────────────────────────────────────────────────────────
+ * Padding is measured to the visible text (cap height), not the line box.
+ * A component size sets ONLY font-size + line-height (a text-* token), --py (in em)
+ * and --lh (unitless line-height, for the fallback). Everything else is derived:
+ *
+ *   --px   = --py + (1lh − 1cap) / 2      optical horizontal padding
+ *   --slot = 1lh                          icon / avatar / kbd slot
+ *   height = 1lh + 2 × --py               (borders are inside: padding = token − --bw)
+ *
+ * Registered as <length> so they compute once on the component and children inherit
+ * absolute values — a Kbd or Avatar inside a Button doesn't re-resolve em/lh/cap
+ * against its own smaller font.
+ */
+@property --py {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --px {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --slot {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-py {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-px {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --e-slot {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/** Optical padding box. Pair with a text-* token, [--py:…] and [--lh:…]; [--bw:1px] if bordered. */
+@utility optical {
+  --slot: 1lh;
+  --px: calc(var(--py) + (1lh - 1cap) / 2);
+  padding-block: max(0px, calc(var(--py) - var(--bw, 0px)));
+  padding-inline: max(0px, calc(var(--px) - var(--bw, 0px)));
+
+  @supports not ((height: 1lh) and (height: 1cap)) {
+    --slot: calc(var(--lh, 1.4) * 1em);
+    --px: calc(var(--py) + (var(--lh, 1.4) * 1em - var(--cap-ratio) * 1em) / 2);
+  }
+}
+
+/**
+ * Leading / trailing visuals (svg icons, or any [data-edge] element: avatar, kbd, dot, clear
+ * button) are pulled toward the edge so their visible side gap equals their vertical gap.
+ * Their size is --edge (default --icon, default the slot). Label text must be in an element
+ * (CSS can't see text nodes), so a lone icon + text never counts as :only-child.
+ */
+@utility optical-edges {
+  --e-py: var(--py);
+  --e-px: var(--px);
+  --e-slot: var(--slot);
+  gap: var(--py);
+
+  & > :is(svg, [data-edge]):first-child:not(:only-child) {
+    margin-inline-start: calc(
+      var(--e-py) + (var(--e-slot) - var(--edge, var(--icon, var(--e-slot)))) / 2 - var(--e-px)
+    );
+  }
+  & > :is(svg, [data-edge]):last-child:not(:only-child) {
+    margin-inline-end: calc(
+      var(--e-py) + (var(--e-slot) - var(--edge, var(--icon, var(--e-slot)))) / 2 - var(--e-px)
+    );
+  }
+}
+
+/**
+ * Icon-only control: padding --py on all sides around a 1lh slot → width === height, always.
+ * Self-contained — use INSTEAD of `optical`, not with it.
+ */
+@utility optical-square {
+  --slot: 1lh;
+  --e-slot: var(--slot);
+  padding: max(0px, calc(var(--py) - var(--bw, 0px)));
+
+  @supports not (height: 1lh) {
+    --slot: calc(var(--lh, 1.4) * 1em);
+  }
+
+  & > svg {
+    margin: calc((var(--e-slot) - var(--icon, var(--e-slot))) / 2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  /* UI scale. Every size is in rem (type, spacing, radius, icons, panels), so this one value
+     grows the whole interface in proportion. 8/7 of the browser default turns 14px Body into
+     16px (16 → 18.29px root). A percentage, so it still follows the user's browser text size. */
+  html {
+    @apply font-sans antialiased;
+    font-size: calc(100% * 8 / 7);
+  }
+  /* Scroll areas still scroll (wheel, touch, keyboard) — the bars are just hidden. */
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  body {
+    @apply bg-background text-body text-foreground;
+  }
+  /* Headings use the heading typeface from Settings › Appearance. */
+  :where(h1, h2, h3, h4, h5, h6, .text-display, .text-heading-1, .text-heading-2) {
+    font-family: var(--font-heading);
+  }
+  /* Tailwind v4 resets buttons to cursor: default — restore the pointer for anything clickable. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    @apply cursor-pointer;
+  }
+}

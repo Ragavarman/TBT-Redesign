@@ -1,0 +1,9 @@
+@import '../src/styles/globals.css';
+
+/* Foundations stories build class names from token lists, which Tailwind can't detect — list them here. */
+@source inline(
+  'text-{display,heading-1,heading-2,title,body-strong,body,small,label,caption,overline}'
+);
+@source inline('rounded-{xs,sm,md,lg,xl,2xl,full}');
+@source inline('shadow-{raised,overlay,modal,focus,card}');
+@source inline('h-control-{sm,md,lg}');

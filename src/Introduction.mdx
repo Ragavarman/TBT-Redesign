@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Introduction" />
+
+# TBT Design System
+
+The shared foundations and components behind the TBT helpdesk, built from the **TBT v3** Figma file.
+
+## Structure (Atomic Design)
+
+| Layer           | What lives there                                         | May import from     |
+| --------------- | -------------------------------------------------------- | ------------------- |
+| **Foundations** | Tokens: color modes, accent themes, bases, type, spacing | —                   |
+| `ui/`           | shadcn primitives, restyled to TBT tokens                | lib, types          |
+| **Atoms**       | Button, Input, Badge, Avatar, StatusGlyph…               | ui, lib, types      |
+| **Molecules**   | FormField, SearchInput, Tabs, TicketStatusBadge…         | atoms and below     |
+| **Organisms**   | Sidebar, DataTable, Dialog, TicketList…                  | molecules and below |
+| **Templates**   | AppShell, ListDetailTemplate…                            | organisms and below |
+
+Layer rules are enforced by `npm run lint`.
+
+## Principles
+
+- **Quiet by default:** neutral surfaces carry the layout. Color is reserved for actions and meaning.
+- **Status is meaning:** ticket state, priority and SLA always pair color with a glyph and a label.
+- **Dense but readable:** 14/20 body text, 32px controls, 4px spacing rhythm.
+- **Tokens, not values:** every fill, stroke, spacing and radius comes from a token.
+
+## Theming
+
+Use the **Mode**, **Accent** and **Base** menus in the toolbar to preview any story in every combination: 2 modes × 10 accents × 7 bases.
+
+In an app, wrap the root in `<ThemeProvider>` and change settings with `useTheme()`. See **Foundations / Colors** for every token.
