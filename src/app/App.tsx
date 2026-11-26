@@ -11,6 +11,7 @@ import { AppSidebar } from './AppSidebar'
 import { CustomerRoute, CustomersViewRoute } from './CustomerRoutes'
 import { CollectionsProvider } from './CollectionsProvider'
 import { CustomersRoot } from './CustomersRoot'
+import { InventoryViewRoute, ItemRoute } from './InventoryRoutes'
 import { KnowledgeViewRoute, NoteRoute } from './KnowledgeRoutes'
 import { ReportsViewRoute } from './ReportRoutes'
 import { useCannedReplies } from './stores'
@@ -96,6 +97,10 @@ function ViewRoute() {
   }
 
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+  if (module === 'inventory') {
+    const page = <InventoryViewRoute view={view} />
+    if (page) return page
+  }
   if (module === 'knowledge') {
     const page = <KnowledgeViewRoute view={view} />
     if (page) return page
@@ -121,6 +126,7 @@ function ViewRoute() {
 function DetailRoute() {
   const { module, view, id = '' } = useParams()
   if (module === 'knowledge' && view === 'notes') return <NoteRoute id={id} />
+  if (module === 'inventory' && view === 'items') return <ItemRoute id={id} />
   return <Navigate to={`/${module}/${view}`} replace />
 }
 

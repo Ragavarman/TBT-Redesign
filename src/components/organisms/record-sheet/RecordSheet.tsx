@@ -38,7 +38,8 @@ export interface RecordSheetProps {
   title: string
   description?: string
   fields: RecordField[]
-  initial?: RecordValues
+  /** Starting values by field name — a record can be passed as-is; extra keys are ignored. */
+  initial?: object
   onSave: (values: RecordValues) => void
   saveLabel?: string
   /** Edit only — shows a destructive Delete that asks first. */
@@ -77,7 +78,13 @@ export function RecordSheet({
   after,
 }: RecordSheetProps) {
   const [v, setV] = useState<RecordValues>(() =>
-    Object.fromEntries(fields.map((f) => [f.name, initial?.[f.name] ?? emptyFor(f)])),
+    Object.fromEntries(
+      fields.map((f) => [
+        f.name,
+        (initial as Record<string, RecordValues[string] | undefined> | undefined)?.[f.name] ??
+          emptyFor(f),
+      ]),
+    ),
   )
   const [tried, setTried] = useState(false)
   const [confirming, setConfirming] = useState(false)
