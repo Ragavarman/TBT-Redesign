@@ -6,8 +6,10 @@ import {
   WS_NOW,
   wsCustomerList,
   wsCustomerProfile,
+  wsCompanies,
   wsDuplicates,
   wsTagDefs,
+  type CompanyRecord,
   type CustomerTagDef,
   type DuplicateGroup,
 } from '@/mocks'
@@ -37,12 +39,17 @@ export function CustomersRoot() {
   )
   const [tags, setTags] = useState<CustomerTagDef[]>(wsTagDefs)
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>(wsDuplicates)
+  const [companyList, setCompanyList] = useState<CompanyRecord[]>(wsCompanies)
   // the sheet: undefined = closed, null = add, id = edit
   const [editing, setEditing] = useState<string | null | undefined>(undefined)
 
   const editingRecord = editing ? records.find((r) => r.customer.id === editing) : undefined
+  // the company picker offers every listed company plus any typed on a customer
   const companies = [
-    ...new Set(records.map((r) => r.profile.company).filter((c): c is string => !!c)),
+    ...new Set([
+      ...companyList.map((c) => c.name),
+      ...records.map((r) => r.profile.company).filter((c): c is string => !!c),
+    ]),
   ].sort()
 
   const save = (v: CustomerFormValues) => {
@@ -133,6 +140,8 @@ export function CustomersRoot() {
       records,
       tags,
       duplicates,
+      companies: companyList,
+      addCompany: (c) => setCompanyList((list) => [...list, c]),
       editCustomer: (id) => setEditing(typeof id === 'string' ? id : null),
       mergeDuplicate: (groupId, picks: MergePicks) => {
         const g = duplicates.find((d) => d.id === groupId)
@@ -207,7 +216,7 @@ export function CustomersRoot() {
           )
       },
     }),
-    [records, tags, duplicates],
+    [records, tags, duplicates, companyList],
   )
 
   return (

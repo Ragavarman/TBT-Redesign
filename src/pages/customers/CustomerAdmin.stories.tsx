@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { wsCustomerProfile, wsCustomers, wsDuplicates, wsTagDefs } from '@/mocks'
+import { wsCompanies, wsCustomerProfile, wsCustomers, wsDuplicates, wsTagDefs } from '@/mocks'
 import { MockSidebar } from '@/stories/shell'
+import { CompaniesPage } from './CompaniesPage'
 import { DuplicatesPage } from './DuplicatesPage'
 import { TagsPage } from './TagsPage'
 
-/** Customers › Needs review (Figma C4) and Customers › Tags (Figma C5). */
+/** Customers › Needs review (Figma C4), Tags (C5) and Companies (X15). */
 const meta = {
-  title: 'Pages/Customers/Review and tags',
+  title: 'Pages/Customers/Review, tags, companies',
   component: DuplicatesPage,
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof DuplicatesPage>
@@ -53,6 +54,22 @@ export const EditTag: StoryObj<typeof TagsPage> = {
       onSave={() => {}}
       onDelete={() => {}}
       initialEditId="tg2"
+    />
+  ),
+}
+
+/** Figma X15 · Companies: Filter (open tickets, applications), Add company, row → its customers. */
+export const Companies: StoryObj<typeof CompaniesPage> = {
+  render: () => (
+    <CompaniesPage
+      sidebar={<MockSidebar module="customers" active="companies" />}
+      companies={wsCompanies.map((c, i) => ({
+        ...c,
+        openTickets: [2, 3, 2, 2, 2, 1, 0, 1, 0][i] ?? 0,
+      }))}
+      applications={['Customer Portal', 'POS', 'Inventory', 'Payments']}
+      onOpenCompany={() => {}}
+      onAddCompany={() => {}}
     />
   ),
 }

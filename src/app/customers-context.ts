@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { CustomerTagDef, DuplicateGroup } from '@/mocks'
+import type { CompanyRecord, CustomerTagDef, DuplicateGroup } from '@/mocks'
 import type { Customer, CustomerProfile } from '@/types'
 
 export interface CustomerRecord {
@@ -14,6 +14,8 @@ export interface CustomersValue {
   records: CustomerRecord[]
   tags: CustomerTagDef[]
   duplicates: DuplicateGroup[]
+  companies: CompanyRecord[]
+  addCompany: (c: CompanyRecord) => void
   /** Open the Add (no id) / Edit customer sheet (Figma C3). */
   editCustomer: (id?: string) => void
   mergeDuplicate: (groupId: string, picks: MergePicks) => void
@@ -26,6 +28,8 @@ export const CustomersContext = createContext<CustomersValue>({
   records: [],
   tags: [],
   duplicates: [],
+  companies: [],
+  addCompany: () => {},
   editCustomer: () => {},
   mergeDuplicate: () => {},
   dismissDuplicate: () => {},

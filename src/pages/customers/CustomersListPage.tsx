@@ -87,6 +87,8 @@ export interface CustomersListPageProps {
   onNewCustomer?: () => void
   /** Possible duplicates waiting for review (Figma C4 banner). */
   duplicates?: { count: number; onReview: () => void }
+  /** Start with this search, e.g. a company from Companies. */
+  initialQuery?: string
 }
 
 export function CustomersListPage({
@@ -97,8 +99,9 @@ export function CustomersListPage({
   onOpenCustomer,
   onNewCustomer,
   duplicates,
+  initialQuery = '',
 }: CustomersListPageProps) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
   const search = useRef<HTMLInputElement>(null)
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase()

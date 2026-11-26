@@ -2,6 +2,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import type { IconName } from '@/components/atoms'
 import { toast } from '@/components/molecules'
 import { CustomerProfilePage } from '@/pages/customers/CustomerProfilePage'
+import { CompaniesPage } from '@/pages/customers/CompaniesPage'
 import { CustomersListPage, type CustomerRow } from '@/pages/customers/CustomersListPage'
 import { DuplicatesPage } from '@/pages/customers/DuplicatesPage'
 import { TagsPage } from '@/pages/customers/TagsPage'
@@ -76,11 +77,29 @@ export function CustomersViewRoute({ view }: { view: string }) {
     )
   }
 
+  if (view === 'companies') {
+    const companyOf = new Map(c.records.map((r) => [r.customer.id, r.profile.company]))
+    return (
+      <CompaniesPage
+        sidebar={<AppSidebar />}
+        companies={c.companies.map((co) => ({
+          ...co,
+          openTickets: tickets.filter((t) => isOpen(t) && companyOf.get(t.requester.id) === co.name)
+            .length,
+        }))}
+        applications={['Customer Portal', 'POS', 'Inventory', 'Payments']}
+        onOpenCompany={(name) => navigate(`/customers/all?q=${encodeURIComponent(name)}`)}
+        onAddCompany={(v) => c.addCompany({ ...v, people: 0, lastContact: '—' })}
+      />
+    )
+  }
+
   const item = findNavItem('customers', view)
   return (
     <CustomersListPage
-      key={view}
+      key={`${view}-${params.get('q') ?? ''}`}
       sidebar={<AppSidebar />}
+      initialQuery={params.get('q') ?? ''}
       title={item?.label ?? 'Customers'}
       icon={typeof item?.icon === 'string' ? (item.icon as IconName) : 'customers'}
       rows={rowsFor(view, c.records, tickets)}

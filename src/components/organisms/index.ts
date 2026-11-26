@@ -33,6 +33,7 @@ export * from './sheet'
 
 // 7 · Ticket detail
 export * from './attachment-tile'
+export * from './company-dialog'
 export * from './composer'
 export * from './customer-sheet'
 export * from './email-view'

@@ -298,3 +298,70 @@ export const wsDuplicates: DuplicateGroup[] = [
     },
   },
 ]
+
+/* ── Companies (Figma X15) ─────────────────────────────────────────────────────────── */
+
+export interface CompanyRecord {
+  name: string
+  domain: string
+  /** Contacts on file (the mock only has one each in wsCustomers). */
+  people: number
+  /** Products they use, shown as chips. */
+  applications: string[]
+  /** "12m", "1h", "2w". */
+  lastContact: string
+}
+
+export const wsCompanies: CompanyRecord[] = [
+  {
+    name: 'Davenport & Co.',
+    domain: 'davenport.co',
+    people: 12,
+    applications: [],
+    lastContact: '12m',
+  },
+  {
+    name: 'Acme Corp',
+    domain: 'acme.lk',
+    people: 48,
+    applications: ['Customer Portal', 'POS'],
+    lastContact: '1h',
+  },
+  {
+    name: 'Northwind',
+    domain: 'northwind.lk',
+    people: 31,
+    applications: ['POS'],
+    lastContact: '4m',
+  },
+  {
+    name: 'Ceylon Mart',
+    domain: 'ceylonmart.lk',
+    people: 27,
+    applications: ['Inventory'],
+    lastContact: '1h',
+  },
+  { name: 'Kandy Foods', domain: 'kandyfoods.lk', people: 19, applications: [], lastContact: '1d' },
+  {
+    name: 'Lanka Pharma',
+    domain: 'lankapharma.lk',
+    people: 14,
+    applications: ['Payments'],
+    lastContact: '2d',
+  },
+  { name: 'Galle HW', domain: 'gallehw.lk', people: 6, applications: [], lastContact: '6d' },
+  {
+    name: 'Bluefin',
+    domain: 'bluefin.lk',
+    people: 9,
+    applications: ['Customer Portal'],
+    lastContact: '1h',
+  },
+  {
+    name: 'Jaffna Textiles',
+    domain: 'jaffnatex.lk',
+    people: 9,
+    applications: [],
+    lastContact: '2w',
+  },
+]
