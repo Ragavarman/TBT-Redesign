@@ -1,4 +1,11 @@
-import { createBrowserRouter, Navigate, RouterProvider, useNavigate, useParams } from 'react-router'
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router'
 import type { IconName } from '@/components/atoms'
 import { Toaster } from '@/components/molecules'
 import { ThemeProvider } from '@/lib/theme'
@@ -15,6 +22,16 @@ import { InventoryViewRoute, ItemRoute } from './InventoryRoutes'
 import { KnowledgeViewRoute, NoteRoute } from './KnowledgeRoutes'
 import { ReportsViewRoute } from './ReportRoutes'
 import { SettingsViewRoute } from './SettingsRoutes'
+import {
+  BillingRoute,
+  CustomerLocationsRoute,
+  ForgotRoute,
+  InboxDemoState,
+  NotFoundRoute,
+  SearchRoute,
+  SignInRoute,
+  WelcomeRoute,
+} from './SharedRoutes'
 import { TeamDetailRoute, TeamViewRoute } from './TeamRoutes'
 import { useCannedReplies } from './stores'
 import {
@@ -47,6 +64,8 @@ function ViewRoute() {
   const { views } = useSavedViews()
   const { tickets, newTicket, updateTickets } = useWorkspace()
   const saveView = useSaveView()
+  const [params] = useSearchParams()
+  const demo = ['loading', 'error'].includes(params.get('demo') ?? '') ? params.get('demo') : null
   if (!view) {
     const first = defaultView(module)
     return <Navigate to={first ? viewPath(module, first) : '/'} replace />
@@ -55,6 +74,7 @@ function ViewRoute() {
   if (module === 'inbox') {
     const open = (id: number) => navigate(ticketPath(view, id))
     // All tickets is the table (Figma 02); every other inbox view is the grouped list (X3/X4)
+    if (view === 'all' && demo) return <InboxDemoState demo={demo} title="All tickets" />
     if (view === 'all') {
       return (
         <TicketsTablePage
@@ -69,6 +89,8 @@ function ViewRoute() {
     }
     const saved = views.find((v) => v.id === view)
     const item = findNavItem('inbox', view)
+    if (demo && (saved || item))
+      return <InboxDemoState demo={demo} title={saved?.name ?? item!.label} />
     if (saved || item) {
       return (
         <TicketsListPage
@@ -95,9 +117,11 @@ function ViewRoute() {
         />
       )
     }
-    return <Navigate to="/" replace />
+    return <NotFoundRoute />
   }
 
+  if (module === 'customers' && view === 'locations') return <CustomerLocationsRoute />
+  if (module === 'settings' && view === 'billing') return <BillingRoute />
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
   if (module === 'settings') {
     const page = <SettingsViewRoute view={view} />
@@ -121,7 +145,7 @@ function ViewRoute() {
   }
 
   const item = findNavItem(module, view)
-  if (!item) return <Navigate to="/" replace />
+  if (!item) return <NotFoundRoute />
   return (
     <PlaceholderPage
       sidebar={<AppSidebar />}
@@ -178,6 +202,8 @@ function TicketRoute() {
 }
 
 const router = createBrowserRouter([
+  { path: '/signin', element: <SignInRoute /> },
+  { path: '/forgot', element: <ForgotRoute /> },
   {
     element: <CustomersRoot />,
     children: [
@@ -189,7 +215,9 @@ const router = createBrowserRouter([
           { path: '/customers/:view/:customerId', element: <CustomerRoute /> },
           { path: '/:module/:view/:id', element: <DetailRoute /> },
           { path: '/:module/:view?', element: <ViewRoute /> },
-          { path: '*', element: <Navigate to="/" replace /> },
+          { path: '/search', element: <SearchRoute /> },
+          { path: '/welcome', element: <WelcomeRoute /> },
+          { path: '*', element: <NotFoundRoute /> },
         ],
       },
     ],

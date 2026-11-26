@@ -211,8 +211,8 @@ export function ZendeskPage({
   onSave,
 }: {
   sidebar: ReactNode
-  value: ZendeskSettings & { connected?: boolean; lastSync?: string }
-  onSave: (v: ZendeskSettings & { connected?: boolean; lastSync?: string }) => void
+  value: ZendeskSettings
+  onSave: (v: ZendeskSettings) => void
 }) {
   const { draft, patch, setDraft, dirty, commit, reset } = useDraft(value, onSave)
   const [disconnecting, setDisconnecting] = useState(false)
@@ -343,8 +343,8 @@ export function RingCentralPage({
   onEditNumber,
 }: {
   sidebar: ReactNode
-  value: RingCentralSettings & { connected?: boolean }
-  onSave: (v: RingCentralSettings & { connected?: boolean }) => void
+  value: RingCentralSettings
+  onSave: (v: RingCentralSettings) => void
   numbers: PhoneNumber[]
   teams: string[]
   onRouteNumber: (id: string, team: string) => void

@@ -394,6 +394,8 @@ export interface ZendeskSettings {
   matchByPhone: boolean
   syncReplies: boolean
   tagImported: boolean
+  connected?: boolean
+  lastSync?: string
   mapping: { id: string; zendesk: string; tbt: string }[]
 }
 export const ZENDESK_TBT_FIELDS = [
@@ -429,6 +431,7 @@ export interface RingCentralSettings {
   voicemail: boolean
   recordings: boolean
   reopen: boolean
+  connected?: boolean
 }
 export const wsPhoneNumbers: PhoneNumber[] = [
   { id: 'n1', number: '(909) 802-3652', label: 'Main line', routesTo: 'Support Team Alpha' },

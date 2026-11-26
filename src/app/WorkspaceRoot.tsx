@@ -7,6 +7,7 @@ import { WS_NOW, wsAgents, wsCurrentAgent, wsCustomers, wsTickets } from '@/mock
 import { formatTicketId, type Customer, type Ticket } from '@/types'
 import { useCustomers } from './customers-context'
 import { ticketPath } from './nav'
+import { ShellOverlays } from './ShellOverlays'
 import { WorkspaceContext, type TicketChange, type WorkspaceValue } from './workspace-context'
 
 const TEAMS = ['Support Team Alpha', 'Technical Team Beta', 'Sales Team Gamma']
@@ -123,7 +124,9 @@ export function WorkspaceRoot() {
 
   return (
     <WorkspaceContext.Provider value={value}>
-      <Outlet />
+      <ShellOverlays>
+        <Outlet />
+      </ShellOverlays>
       <NewTicketDialog
         // remount so a call's caller is picked when it opens
         key={prefill ?? 'blank'}

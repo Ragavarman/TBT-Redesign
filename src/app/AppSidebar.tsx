@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/organisms'
 import { moduleNav, railFooterModules, railModules, wsCurrentAgent } from '@/mocks'
 import { defaultView, savedViewItems, viewPath } from './nav'
 import { useSavedViews } from './saved-views-context'
+import { useShell } from './shell-context'
 import { useWorkspace } from './workspace-context'
 
 const COLLAPSED_KEY = 'tbt-sidebar-collapsed'
@@ -41,6 +42,7 @@ export function AppSidebar({
   const nav = moduleNav[module] ?? moduleNav.inbox!
   const { views, reports } = useSavedViews()
   const { newTicket } = useWorkspace()
+  const shell = useShell()
 
   // Saved views go under Views, and favourites under Favorites too.
   // Saved reports go under Saved reports, before + New report.
@@ -77,20 +79,30 @@ export function AppSidebar({
       }}
       rail={{
         modules: railModules,
-        footerModules: railFooterModules,
+        footerModules: railFooterModules.map((m) =>
+          m.id === 'notifications' ? { ...m, dot: shell.unreadNotifications > 0 } : m,
+        ),
         activeId: module,
         onSelect: (m) => {
+          if (m.id === 'search') return shell.openSearch()
+          if (m.id === 'notifications') return shell.toggleNotifications()
           const first = defaultView(m.id)
           if (first) navigate(viewPath(m.id, first))
         },
         user: { name: wsCurrentAgent.name, presence: wsCurrentAgent.presence },
+        onUserClick: () => navigate('/settings/profile'),
       }}
       nav={{
         title: nav.title,
         actions:
           module === 'inbox' ? (
             <>
-              <IconButton icon="search" label="Search" size="sm" />
+              <IconButton
+                icon="search"
+                label="Search (Ctrl K)"
+                size="sm"
+                onClick={shell.openSearch}
+              />
               <IconButton
                 icon="plus"
                 label="New ticket (C)"
