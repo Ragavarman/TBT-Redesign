@@ -162,15 +162,22 @@ export function TeamViewRoute({ view }: { view: string }) {
           {
             key: 'name',
             label: 'Agent',
+            className: 'min-w-48',
             sort: (m) => m.name,
             render: (m) => (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 pe-4">
                 <Avatar name={m.name} size="xs" aria-hidden />
-                <span className="flex flex-col">
-                  <span>{m.name}</span>
-                  <span className="text-small text-muted-foreground">{m.email}</span>
-                </span>
+                <span className="line-clamp-1">{m.name}</span>
               </span>
+            ),
+          },
+          {
+            key: 'email',
+            label: 'Email',
+            className: 'w-56',
+            sort: (m) => m.email,
+            render: (m) => (
+              <span className="line-clamp-1 pe-4 text-muted-foreground">{m.email}</span>
             ),
           },
           {
