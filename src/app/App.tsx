@@ -14,6 +14,7 @@ import { CustomersRoot } from './CustomersRoot'
 import { InventoryViewRoute, ItemRoute } from './InventoryRoutes'
 import { KnowledgeViewRoute, NoteRoute } from './KnowledgeRoutes'
 import { ReportsViewRoute } from './ReportRoutes'
+import { SettingsViewRoute } from './SettingsRoutes'
 import { TeamDetailRoute, TeamViewRoute } from './TeamRoutes'
 import { useCannedReplies } from './stores'
 import {
@@ -98,6 +99,10 @@ function ViewRoute() {
   }
 
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+  if (module === 'settings') {
+    const page = <SettingsViewRoute view={view} />
+    if (page) return page
+  }
   if (module === 'team') {
     const page = <TeamViewRoute view={view} />
     if (page) return page

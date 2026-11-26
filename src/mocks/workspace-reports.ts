@@ -26,6 +26,10 @@ export interface SlaPolicy {
   avgTime?: string
   businessHours: boolean
   active: boolean
+  /** X20 options. */
+  warnAtRisk?: boolean
+  escalate?: boolean
+  pauseOnWaiting?: boolean
 }
 
 export const wsSlaPolicies: SlaPolicy[] = [

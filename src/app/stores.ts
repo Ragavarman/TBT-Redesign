@@ -1,4 +1,30 @@
 import {
+  wsActionTypes,
+  wsApplications,
+  wsBackups,
+  wsCustomerTags,
+  wsDevices,
+  wsGeneral,
+  wsNotificationEvents,
+  wsOrganizations,
+  wsPhoneNumbers,
+  wsProfile,
+  wsRingCentral,
+  wsRoutingRules,
+  wsSlaPolicies,
+  wsTicketFields,
+  wsZendesk,
+  type ActionType,
+  type Application,
+  type BackupFile,
+  type CustomerTag,
+  type NotificationEvent,
+  type Organization,
+  type PhoneNumber,
+  type RoutingRule,
+  type SignedInDevice,
+  type SlaPolicy,
+  type TicketField,
   wsBrands,
   wsCannedReplyRecords,
   wsInvites,
@@ -42,3 +68,33 @@ export const useTeamMembers = () => useCollection<TeamMember>('team-members', ws
 export const useTeams = () => useCollection<Team>('teams', wsTeams)
 export const usePermissions = () => useCollection<PermissionRow>('permissions', wsPermissions)
 export const useInvites = () => useCollection<Invite>('invites', wsInvites)
+
+export const useApplications = () => useCollection<Application>('applications', wsApplications)
+export const useOrganizations = () => useCollection<Organization>('organizations', wsOrganizations)
+export const useSlaPolicies = () => useCollection<SlaPolicy>('sla-policies', wsSlaPolicies)
+export const useTicketFields = () => useCollection<TicketField>('ticket-fields', wsTicketFields)
+export const useActionTypes = () => useCollection<ActionType>('action-types', wsActionTypes)
+export const useCustomerTags = () => useCollection<CustomerTag>('customer-tags', wsCustomerTags)
+export const useRoutingRules = () => useCollection<RoutingRule>('routing-rules', wsRoutingRules)
+export const usePhoneNumbers = () => useCollection<PhoneNumber>('phone-numbers', wsPhoneNumbers)
+export const useBackups = () => useCollection<BackupFile>('backups', wsBackups)
+export const useDevices = () => useCollection<SignedInDevice>('devices', wsDevices)
+
+/** A single settings document kept for the session (profile, general, integrations). */
+function useDoc<T extends object>(key: string, seed: T) {
+  const c = useCollection<T & { id: string }>(key, [{ ...seed, id: key }])
+  const doc = c.items[0]!
+  return [doc as T, (next: T) => c.replace([{ ...next, id: key }])] as const
+}
+export const useProfileDoc = () => useDoc('profile', wsProfile)
+export const useGeneralDoc = () => useDoc('general', wsGeneral)
+export const useZendeskDoc = () => useDoc('zendesk', wsZendesk)
+export const useRingCentralDoc = () => useDoc('ringcentral', wsRingCentral)
+export const useNotificationsDoc = () =>
+  useDoc<{ events: NotificationEvent[]; quietHours: boolean }>('notifications', {
+    events: wsNotificationEvents,
+    quietHours: true,
+  })
+export const useSecurityDoc = () =>
+  useDoc('security', { authenticator: true, backupCodes: false, passwordChanged: '3 months ago' })
+export const useBackupDoc = () => useDoc('backup-settings', { nightly: true })
