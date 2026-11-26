@@ -8,7 +8,7 @@ import {
   DEFAULT_SETTINGS,
   FONTS,
   RADIUS_OPTIONS,
-  type FontId,
+  isFont,
   type ModePreference,
   type Radius,
   type ThemeSettings,
@@ -33,6 +33,11 @@ export function AppearancePage({ sidebar, value, onChange, onReset }: Appearance
   const isDefault = (Object.keys(DEFAULT_SETTINGS) as (keyof ThemeSettings)[]).every(
     (k) => value[k] === DEFAULT_SETTINGS[k],
   )
+  const heading = FONTS[value.headingFont] ?? FONTS.inter
+  const body = FONTS[value.bodyFont] ?? FONTS.inter
+  const setFont = (key: 'headingFont' | 'bodyFont') => (v: string) => {
+    if (isFont(v)) onChange({ [key]: v })
+  }
   return (
     <SettingsPage
       sidebar={sidebar}
@@ -120,31 +125,25 @@ export function AppearancePage({ sidebar, value, onChange, onReset }: Appearance
         <FormField label="Heading">
           <Select
             value={value.headingFont}
-            onValueChange={(v) => onChange({ headingFont: v as FontId })}
+            onValueChange={setFont('headingFont')}
             options={FONT_OPTIONS}
           />
         </FormField>
         <FormField label="Body">
           <Select
             value={value.bodyFont}
-            onValueChange={(v) => onChange({ bodyFont: v as FontId })}
+            onValueChange={setFont('bodyFont')}
             options={FONT_OPTIONS}
           />
         </FormField>
         <div className="col-span-full flex flex-col gap-1.5 rounded-lg bg-muted p-4">
           <span className="text-caption text-muted-foreground uppercase">
-            Preview · {FONTS[value.headingFont].label} / {FONTS[value.bodyFont].label}
+            Preview · {heading.label} / {body.label}
           </span>
-          <span
-            className="text-heading-2 text-foreground"
-            style={{ fontFamily: FONTS[value.headingFont].stack }}
-          >
+          <span className="text-heading-2 text-foreground" style={{ fontFamily: heading.stack }}>
             Printer offline at Main Office
           </span>
-          <span
-            className="text-body text-muted-foreground"
-            style={{ fontFamily: FONTS[value.bodyFont].stack }}
-          >
+          <span className="text-body text-muted-foreground" style={{ fontFamily: body.stack }}>
             Kasun reported the HP LaserJet stopped responding after this morning’s update. We’re
             checking the print queue and will reply by 2:00 PM.
           </span>
@@ -177,7 +176,7 @@ export function AppearancePage({ sidebar, value, onChange, onReset }: Appearance
                   className="sr-only"
                 />
                 {/* Fixed corner sample — it shows the option, so it ignores the active radius. */}
-                <span className="relative block h-13 overflow-hidden [border-radius:0.375rem] bg-muted">
+                <span className="relative block h-13 overflow-hidden rounded-[0.375rem] bg-muted">
                   <span
                     className={cn(
                       'absolute top-3.5 left-4 h-12 w-16 border-2',
@@ -290,12 +289,12 @@ function ChipGroup<T extends string>({
 /** Miniature app window for the Mode cards. Fixed colours: it previews a mode, not the current one. */
 function ModePreview({ tone }: { tone: 'light' | 'dark' }) {
   const dark = tone === 'dark'
-  const line = dark ? 'bg-[var(--tbt-neutral-700)]' : 'bg-[var(--tbt-neutral-200)]'
+  const line = dark ? 'bg-(--tbt-neutral-700)' : 'bg-(--tbt-neutral-200)'
   return (
     <span
       className={cn(
         'absolute inset-0 flex gap-0 p-1.5',
-        dark ? 'bg-[var(--tbt-neutral-900)]' : 'bg-[var(--tbt-neutral-100)]',
+        dark ? 'bg-(--tbt-neutral-900)' : 'bg-(--tbt-neutral-100)',
       )}
     >
       <span className="flex w-1/4 flex-col gap-1.5 p-1.5">
@@ -308,8 +307,8 @@ function ModePreview({ tone }: { tone: 'light' | 'dark' }) {
         className={cn(
           'flex flex-1 flex-col gap-2 rounded-sm border p-2',
           dark
-            ? 'border-[var(--tbt-neutral-800)] bg-[var(--tbt-neutral-950)]'
-            : 'border-[var(--tbt-neutral-200)] bg-white',
+            ? 'border-(--tbt-neutral-800) bg-(--tbt-neutral-950)'
+            : 'border-(--tbt-neutral-200) bg-white',
         )}
       >
         <span className="flex items-center justify-between">
@@ -319,7 +318,7 @@ function ModePreview({ tone }: { tone: 'light' | 'dark' }) {
         <span
           className={cn(
             'flex flex-1 flex-col gap-1.5 rounded-sm border p-2',
-            dark ? 'border-[var(--tbt-neutral-800)]' : 'border-[var(--tbt-neutral-200)]',
+            dark ? 'border-(--tbt-neutral-800)' : 'border-(--tbt-neutral-200)',
           )}
         >
           {[50, 90, 75, 85].map((w, i) => (

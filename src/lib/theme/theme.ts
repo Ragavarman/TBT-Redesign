@@ -59,8 +59,9 @@ export const isAccent = (v: unknown): v is Accent => ACCENTS.includes(v as Accen
 export const isBase = (v: unknown): v is Base => BASES.includes(v as Base)
 export const isModePreference = (v: unknown): v is ModePreference =>
   v === 'light' || v === 'dark' || v === 'system'
-export const isRadius = (v: unknown): v is Radius => typeof v === 'string' && v in RADIUS_OPTIONS
-export const isFont = (v: unknown): v is FontId => typeof v === 'string' && v in FONTS
+export const isRadius = (v: unknown): v is Radius =>
+  typeof v === 'string' && Object.hasOwn(RADIUS_OPTIONS, v)
+export const isFont = (v: unknown): v is FontId => typeof v === 'string' && Object.hasOwn(FONTS, v)
 
 export function systemMode(): Mode {
   if (typeof window === 'undefined' || !window.matchMedia) return 'light'
@@ -103,18 +104,27 @@ export function loadSettings(key: string): Partial<ThemeSettings> {
     if (!raw) return {}
     const parsed: unknown = JSON.parse(raw)
     if (typeof parsed !== 'object' || parsed === null) return {}
-    const p = parsed as Record<string, unknown>
-    return {
-      ...(isModePreference(p.mode) && { mode: p.mode }),
-      ...(isAccent(p.accent) && { accent: p.accent }),
-      ...(isBase(p.base) && { base: p.base }),
-      ...(isRadius(p.radius) && { radius: p.radius }),
-      ...(isFont(p.headingFont) && { headingFont: p.headingFont }),
-      ...(isFont(p.bodyFont) && { bodyFont: p.bodyFont }),
-    }
+    return pickValid(parsed as Record<string, unknown>)
   } catch {
     return {}
   }
+}
+
+/** Only the fields that hold a valid value. */
+function pickValid(p: Record<string, unknown>): Partial<ThemeSettings> {
+  return {
+    ...(isModePreference(p.mode) && { mode: p.mode }),
+    ...(isAccent(p.accent) && { accent: p.accent }),
+    ...(isBase(p.base) && { base: p.base }),
+    ...(isRadius(p.radius) && { radius: p.radius }),
+    ...(isFont(p.headingFont) && { headingFont: p.headingFont }),
+    ...(isFont(p.bodyFont) && { bodyFont: p.bodyFont }),
+  }
+}
+
+/** Every field present and valid — missing or bad values fall back to the defaults. */
+export function sanitizeSettings(s: Partial<ThemeSettings>): ThemeSettings {
+  return { ...DEFAULT_SETTINGS, ...pickValid(s as Record<string, unknown>) }
 }
 
 export function saveSettings(key: string, settings: ThemeSettings) {

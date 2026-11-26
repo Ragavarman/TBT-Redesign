@@ -6,6 +6,7 @@ export {
   resolveMode,
   DEFAULT_SETTINGS,
   FONTS,
+  isFont,
   RADIUS_OPTIONS,
   type FontId,
   type Radius,

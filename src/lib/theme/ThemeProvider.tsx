@@ -4,6 +4,7 @@ import {
   DEFAULT_SETTINGS,
   applyTheme,
   loadSettings,
+  sanitizeSettings,
   saveSettings,
   systemMode,
   type Mode,
@@ -32,11 +33,14 @@ export function ThemeProvider({
   defaultSettings,
   storageKey = 'tbt-theme',
 }: ThemeProviderProps) {
-  const [settings, setSettings] = useState<ThemeSettings>(() => ({
+  const [raw, setSettings] = useState<ThemeSettings>(() => ({
     ...DEFAULT_SETTINGS,
     ...defaultSettings,
     ...(storageKey ? loadSettings(storageKey) : {}),
   }))
+  // Fill anything missing or invalid (state kept across a hot reload from an older shape,
+  // or a bad patch) so consumers can always index FONTS / RADIUS_OPTIONS safely.
+  const settings = useMemo(() => sanitizeSettings(raw), [raw])
   const [system, setSystem] = useState<Mode>(systemMode)
 
   // Track OS dark-mode changes for `mode: 'system'`.
@@ -65,7 +69,7 @@ export function ThemeProvider({
       setMode: (mode) => setSettings((s) => ({ ...s, mode })),
       setAccent: (accent) => setSettings((s) => ({ ...s, accent })),
       setBase: (base) => setSettings((s) => ({ ...s, base })),
-      update: (patch) => setSettings((s) => ({ ...s, ...patch })),
+      update: (patch) => setSettings((s) => sanitizeSettings({ ...s, ...patch })),
       reset: () => setSettings({ ...DEFAULT_SETTINGS, ...defaultSettings }),
     }),
     [settings, resolvedMode, defaultSettings],
