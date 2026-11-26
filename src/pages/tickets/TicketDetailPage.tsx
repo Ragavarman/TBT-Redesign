@@ -63,12 +63,17 @@ import {
   wsTickets,
   wsGeneratedDetail,
   wsTicketDetail,
+  wsApplications,
+  wsInventory,
+  wsSlaPolicies,
 } from '@/mocks'
+import { FieldPicker, InlineText } from './InlineFields'
 import { cn } from '@/lib/utils'
 import {
   formatBytes,
   type Agent,
   formatTicketId,
+  TICKET_PRIORITIES,
   TICKET_PRIORITY_LABEL,
   TICKET_STATUS_LABEL,
   type Ticket,
@@ -452,87 +457,195 @@ const pickerTrigger =
   '-mx-1 inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-xs px-1 py-0.5 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-accent'
 
 function DetailsCard({
-  ticket,
+  subject,
+  onSubject,
   team,
+  onTeam,
   priority,
+  onPriority,
+  application,
+  onApplication,
+  tags,
+  tagOptions,
+  onToggleTag,
   sla,
+  slaPolicy,
+  onSlaPolicy,
+  asset,
+  assetOptions,
+  onAsset,
   statusPicker,
   assigneePicker,
-  detail,
   invoice,
   mergedInto,
   onAddInvoice,
+  similar,
 }: {
-  ticket: Ticket
+  subject: string
+  onSubject: (v: string) => void
   team: string
+  onTeam: (v: string) => void
   priority: TicketPriority
+  onPriority: (v: TicketPriority) => void
+  application: string
+  onApplication: (v: string) => void
+  tags: string[]
+  /** Every label in the workspace. */
+  tagOptions: string[]
+  onToggleTag: (tag: string) => void
   /** SLA value: plain text when on track, a badge when at risk or breached. */
   sla: ReactNode
+  slaPolicy: string
+  onSlaPolicy: (v: string) => void
+  asset?: string
+  assetOptions: string[]
+  /** `undefined` unlinks the device. */
+  onAsset: (v: string | undefined) => void
   /** <StatusPicker /> with its trigger — the Status value. */
   statusPicker: ReactNode
   /** <AssigneePicker /> with its trigger — the Assignee value. */
   assigneePicker: ReactNode
-  detail: TicketDetail
   /** The linked invoice, once added (Figma T5). */
   invoice?: InvoiceSubmit
   /** Ticket this one was merged into (Figma T4). */
   mergedInto?: string
   onAddInvoice: () => void
+  similar: TicketDetail['similar']
 }) {
+  const opts = (xs: string[]) => xs.map((x) => ({ value: x, label: x }))
+  const addLink = (text: string) => (
+    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+      <Icon name="plus" size={12} />
+      {text}
+    </span>
+  )
   return (
     <section
       aria-label="Ticket details"
-      className="flex flex-col gap-1 rounded-xl border bg-card px-4 pt-4 pb-3 text-card-foreground"
+      className="flex flex-col gap-1.5 rounded-xl border bg-card px-4 pt-4 pb-3 text-card-foreground [&_[data-slot=property-row]]:min-h-9"
     >
-      <h2 className="pb-2 text-title text-foreground">{ticket.subject}</h2>
+      <h2 className="pb-2 text-title text-foreground">
+        <InlineText label="Subject" value={subject} onChange={onSubject} />
+      </h2>
       <PropertyRow label="Status">{statusPicker}</PropertyRow>
       <PropertyRow label="Assignee">{assigneePicker}</PropertyRow>
       <PropertyRow label="Priority">
-        <PriorityGlyph priority={priority} label={null} />
-        {TICKET_PRIORITY_LABEL[priority]}
+        <FieldPicker
+          label="Priority"
+          placeholder="Change priority…"
+          value={priority}
+          onChange={(v) => onPriority(v as TicketPriority)}
+          options={TICKET_PRIORITIES.map((p) => ({
+            value: p,
+            label: TICKET_PRIORITY_LABEL[p],
+            icon: <PriorityGlyph priority={p} label={null} />,
+          }))}
+        >
+          <PriorityGlyph priority={priority} label={null} />
+          {TICKET_PRIORITY_LABEL[priority]}
+        </FieldPicker>
       </PropertyRow>
-      <PropertyRow label="Team">{team}</PropertyRow>
-      <PropertyRow label="Application">{detail.application}</PropertyRow>
+      <PropertyRow label="Team">
+        <FieldPicker
+          label="Team"
+          placeholder="Move to team…"
+          value={team}
+          onChange={onTeam}
+          options={opts(TEAMS)}
+        >
+          <span className="truncate">{team}</span>
+        </FieldPicker>
+      </PropertyRow>
+      <PropertyRow label="Application">
+        <FieldPicker
+          label="Application"
+          placeholder="Change application…"
+          value={application}
+          onChange={onApplication}
+          options={opts(wsApplications.map((a) => a.name))}
+        >
+          <span className="truncate">{application}</span>
+        </FieldPicker>
+      </PropertyRow>
       <PropertyRow label="Labels">
-        {ticket.tags.map((tag) => (
-          <Badge key={tag} variant="outline">
-            {tag}
-          </Badge>
-        ))}
-        <IconButton icon="plus" label="Add label" size="sm" className="size-6" />
+        <FieldPicker
+          label="Labels"
+          placeholder="Add or remove labels…"
+          value={tags}
+          onChange={onToggleTag}
+          options={opts(tagOptions)}
+        >
+          {tags.length
+            ? tags.map((tag) => (
+                <Badge key={tag} variant="outline">
+                  {tag}
+                </Badge>
+              ))
+            : addLink('Add label')}
+        </FieldPicker>
       </PropertyRow>
-      <PropertyRow label="SLA">{sla}</PropertyRow>
+      <PropertyRow label="SLA">
+        <FieldPicker
+          label="SLA policy"
+          placeholder="Change SLA policy…"
+          value={slaPolicy}
+          onChange={onSlaPolicy}
+          options={wsSlaPolicies.map((p) => ({ value: p.name, label: p.name, meta: p.target }))}
+        >
+          {sla ?? <span className="text-muted-foreground">{slaPolicy}</span>}
+        </FieldPicker>
+      </PropertyRow>
       <DetailsGroup title="Linked">
-        <PropertyRow label="Asset" action={{ label: 'Link device', onClick: () => {} }}>
-          {detail.asset}
+        <PropertyRow label="Asset">
+          <FieldPicker
+            label="Asset"
+            placeholder="Link a device…"
+            value={asset}
+            onChange={(v) => onAsset(v === UNLINK ? undefined : v)}
+            options={[
+              ...opts(assetOptions),
+              ...(asset ? [{ value: UNLINK, label: 'Unlink device' }] : []),
+            ]}
+          >
+            {asset ? <span className="truncate">{asset}</span> : addLink('Link device')}
+          </FieldPicker>
         </PropertyRow>
-        <PropertyRow label="Invoice" action={{ label: 'Add invoice', onClick: onAddInvoice }}>
-          {invoice && (
-            <>
-              <span className="truncate">
-                {invoice.number} · {invoice.currency}{' '}
-                {invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-              <Badge
-                variant={
-                  invoice.status === 'Paid'
-                    ? 'success'
-                    : invoice.status === 'Overdue'
-                      ? 'destructive'
-                      : 'neutral'
-                }
-              >
-                {invoice.status}
-              </Badge>
-            </>
-          )}
+        <PropertyRow label="Invoice">
+          <button
+            type="button"
+            aria-label={invoice ? 'Edit invoice' : 'Add invoice'}
+            onClick={onAddInvoice}
+            className={pickerTrigger}
+          >
+            {invoice ? (
+              <>
+                <span className="truncate">
+                  {invoice.number} · {invoice.currency}{' '}
+                  {invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </span>
+                <Badge
+                  variant={
+                    invoice.status === 'Paid'
+                      ? 'success'
+                      : invoice.status === 'Overdue'
+                        ? 'destructive'
+                        : 'neutral'
+                  }
+                >
+                  {invoice.status}
+                </Badge>
+              </>
+            ) : (
+              addLink('Add invoice')
+            )}
+          </button>
         </PropertyRow>
         {mergedInto && <PropertyRow label="Merged into">{mergedInto}</PropertyRow>}
       </DetailsGroup>
-      {detail.similar.length > 0 && (
-        <DetailsGroup title="Similar tickets" count={detail.similar.length}>
+      {similar.length > 0 && (
+        <DetailsGroup title="Similar tickets" count={similar.length}>
           <div className="flex flex-col px-2">
-            {detail.similar.map((s) => (
+            {similar.map((s) => (
               <LinkedTicketRow
                 key={s.id}
                 status={s.status}
@@ -546,6 +659,8 @@ function DetailsCard({
     </section>
   )
 }
+
+const UNLINK = '__unlink__'
 
 function CustomerCard({
   ticket,
@@ -678,6 +793,17 @@ export function TicketDetailPage({
   const [activity, setActivity] = useState<TicketActivity[]>(baseDetail.activity)
   const [messages, setMessages] = useState<TicketMessage[]>(baseDetail.messages)
   const [priority, setPriority] = useState<TicketPriority>(ticket.priority)
+  // Inline-edited properties (details card)
+  const [subject, setSubject] = useState(ticket.subject)
+  const [application, setApplication] = useState(baseDetail.application)
+  const [tags, setTags] = useState<string[]>(ticket.tags)
+  const [slaPolicy, setSlaPolicy] = useState(
+    () =>
+      wsApplications.find((a) => a.name === baseDetail.application)?.slaPolicy ??
+      wsSlaPolicies[0]?.name ??
+      '',
+  )
+  const [asset, setAsset] = useState(baseDetail.asset)
   const [resolution, setResolution] = useState(baseDetail.resolution)
   const [resolveOpen, setResolveOpen] = useState(initialResolve ?? false)
   // Merge (T4) and Add invoice (T5)
@@ -776,11 +902,33 @@ export function TicketDetailPage({
   }
 
   const moveTeam = (next: string) => {
+    if (next === team) return
     log(`${me.name} moved the ticket`, `${team} → ${next}`)
     setTeam(next)
     setAssignee(undefined)
     toast.success(`Moved to ${next}`)
   }
+
+  /** Inline edits from the details card — each one lands on the timeline. */
+  const edit = <T,>(
+    what: string,
+    from: T,
+    to: T,
+    set: (v: T) => void,
+    show: (v: T) => string = String,
+  ) => {
+    if (from === to) return
+    log(`${me.name} changed ${what}`, `${show(from) || '—'} → ${show(to) || '—'}`)
+    set(to)
+    toast.success(`${what[0]!.toUpperCase()}${what.slice(1)} updated`)
+  }
+  const toggleTag = (tag: string) => {
+    const on = tags.includes(tag)
+    log(`${me.name} ${on ? 'removed' : 'added'} a label`, tag)
+    setTags(on ? tags.filter((t) => t !== tag) : [...tags, tag])
+  }
+  const tagOptions = [...new Set([...wsTickets.flatMap((t) => t.tags), ...tags])].sort()
+  const assetOptions = [...new Set([...wsInventory.map((a) => a.name), ...(asset ? [asset] : [])])]
 
   const snooze = (until: SnoozeUntil | undefined) => {
     setSnoozed(until)
@@ -1061,7 +1209,7 @@ export function TicketDetailPage({
                   </Badge>
                 )}
               </div>
-              <h1 className="line-clamp-2 text-heading-2 text-foreground">{ticket.subject}</h1>
+              <h1 className="line-clamp-2 text-heading-2 text-foreground">{subject}</h1>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <SnoozeMenu
@@ -1188,14 +1336,29 @@ export function TicketDetailPage({
         details={
           <>
             <DetailsCard
-              ticket={ticket}
+              subject={subject}
+              onSubject={(v) => edit('the subject', subject, v, setSubject)}
               team={team}
+              onTeam={moveTeam}
               priority={priority}
+              onPriority={(v) =>
+                edit('priority', priority, v, setPriority, (p) => TICKET_PRIORITY_LABEL[p])
+              }
+              application={application}
+              onApplication={(v) => edit('the application', application, v, setApplication)}
+              tags={tags}
+              tagOptions={tagOptions}
+              onToggleTag={toggleTag}
               sla={slaValue}
-              detail={detail}
+              slaPolicy={slaPolicy}
+              onSlaPolicy={(v) => edit('the SLA policy', slaPolicy, v, setSlaPolicy)}
+              asset={asset}
+              assetOptions={assetOptions}
+              onAsset={(v) => edit('the linked device', asset, v, setAsset, (x) => x ?? '')}
               invoice={invoice}
               mergedInto={mergedInto}
               onAddInvoice={() => setOverlay('invoice')}
+              similar={detail.similar}
               statusPicker={
                 <StatusPicker
                   status={status}
