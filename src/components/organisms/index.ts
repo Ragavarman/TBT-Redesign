@@ -24,6 +24,7 @@ export * from './ticket-row'
 
 // 6a · Page pieces
 export * from './chart-card'
+export * from './date-range-picker'
 export * from './composer-bar'
 export * from './filter-chips'
 export * from './kpi-strip'

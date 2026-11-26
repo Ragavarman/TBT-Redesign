@@ -19,6 +19,10 @@ export interface CalendarProps extends Omit<ComponentProps<'div'>, 'onChange'> {
   onChange: (day: string) => void
   /** Earliest pickable day; earlier days are disabled. */
   min?: string
+  /** Latest pickable day; later days are disabled (e.g. no future dates in reports). */
+  max?: string
+  /** Show a range: both ends selected, the days between tinted (Figma X18 Date range picker). */
+  range?: { start: string; end?: string }
   /** Highlighted as today. */
   today?: string
 }
@@ -27,9 +31,19 @@ export interface CalendarProps extends Omit<ComponentProps<'div'>, 'onChange'> {
  * Month grid (Figma Interface · X5 Snooze): Monday-first weeks, prev / next month, days outside
  * the month muted. Arrow keys move by day / week, Home / End to the week's ends, Enter picks.
  */
-export function Calendar({ value, onChange, min, today, className, ...props }: CalendarProps) {
-  const [month, setMonth] = useState(() => monthOf(value ?? today ?? todayUTC()))
-  const [focused, setFocused] = useState(() => value ?? today ?? `${month}-01`)
+export function Calendar({
+  value,
+  onChange,
+  min,
+  max,
+  range,
+  today,
+  className,
+  ...props
+}: CalendarProps) {
+  const anchor = value ?? range?.end ?? range?.start
+  const [month, setMonth] = useState(() => monthOf(anchor ?? today ?? todayUTC()))
+  const [focused, setFocused] = useState(() => anchor ?? today ?? `${month}-01`)
   const grid = useRef<HTMLDivElement>(null)
 
   const first = `${month}-01`
@@ -39,7 +53,7 @@ export function Calendar({ value, onChange, min, today, className, ...props }: C
   const days = Array.from({ length: weeks * 7 }, (_, i) => addDays(start, i))
 
   const move = (d: string) => {
-    if (min && d < min) return
+    if ((min && d < min) || (max && d > max)) return
     setFocused(d)
     if (monthOf(d) !== month) setMonth(monthOf(d))
     requestAnimationFrame(() =>
@@ -102,8 +116,9 @@ export function Calendar({ value, onChange, min, today, className, ...props }: C
           <div key={w} role="row" className="grid grid-cols-7">
             {days.slice(w * 7, w * 7 + 7).map((d) => {
               const outside = monthOf(d) !== month
-              const disabled = min !== undefined && d < min
-              const selected = d === value
+              const disabled = (min !== undefined && d < min) || (max !== undefined && d > max)
+              const selected = d === value || d === range?.start || d === range?.end
+              const between = !!range?.end && d > range.start && d < range.end
               return (
                 <span key={d} role="gridcell" aria-selected={selected} className="p-0.5">
                   <button
@@ -122,6 +137,7 @@ export function Calendar({ value, onChange, min, today, className, ...props }: C
                       'transition-colors duration-150 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
                       outside ? 'text-muted-foreground' : 'text-foreground',
                       d === today && !selected && 'font-semibold text-primary',
+                      between && 'rounded-none bg-primary/15',
                       selected && 'bg-primary text-primary-foreground hover:bg-primary',
                       'disabled:pointer-events-none disabled:opacity-40',
                     )}

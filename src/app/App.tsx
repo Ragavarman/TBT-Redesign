@@ -3,6 +3,7 @@ import type { IconName } from '@/components/atoms'
 import { Toaster } from '@/components/molecules'
 import { ThemeProvider } from '@/lib/theme'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { ReportsOverviewPage } from '@/pages/reports/ReportsOverviewPage'
 import { TicketDetailPage } from '@/pages/tickets/TicketDetailPage'
 import { TicketsListPage } from '@/pages/tickets/TicketsListPage'
 import { TicketsTablePage } from '@/pages/tickets/TicketsTablePage'
@@ -92,6 +93,14 @@ function ViewRoute() {
   }
 
   if (module === 'customers' && isCustomerListView(view)) return <CustomersViewRoute view={view} />
+  if (module === 'reports' && view === 'overview')
+    return (
+      <ReportsOverviewPage
+        sidebar={<AppSidebar />}
+        tickets={tickets}
+        onOpenTicket={(id) => navigate(ticketPath('all', id))}
+      />
+    )
 
   const item = findNavItem(module, view)
   if (!item) return <Navigate to="/" replace />
