@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { Avatar, Badge, Button, Input, type IconName } from '@/components/atoms'
+import { Avatar, Badge, Button, Icon, Input, type IconName } from '@/components/atoms'
 import { EmptyState } from '@/components/molecules'
 import { createDataTableColumns, DataTable, PageHeader } from '@/components/organisms'
 import { ListPageTemplate } from '@/components/templates'
@@ -83,8 +83,10 @@ export interface CustomersListPageProps {
   icon?: IconName
   rows: CustomerRow[]
   onOpenCustomer: (id: string) => void
-  /** Figma C3, wired in its own step. */
+  /** Add customer (Figma C3); C opens it too. */
   onNewCustomer?: () => void
+  /** Possible duplicates waiting for review (Figma C4 banner). */
+  duplicates?: { count: number; onReview: () => void }
 }
 
 export function CustomersListPage({
@@ -94,6 +96,7 @@ export function CustomersListPage({
   rows,
   onOpenCustomer,
   onNewCustomer,
+  duplicates,
 }: CustomersListPageProps) {
   const [query, setQuery] = useState('')
   const search = useRef<HTMLInputElement>(null)
@@ -121,27 +124,46 @@ export function CustomersListPage({
           title={title}
           count={rows.length}
           actions={
-            <Button leadingIcon="plus" onClick={onNewCustomer} disabled={!onNewCustomer}>
-              New customer
+            <Button
+              leadingIcon="plus"
+              shortcut="C"
+              onClick={onNewCustomer}
+              disabled={!onNewCustomer}
+            >
+              Add customer
             </Button>
           }
         />
       }
       toolbar={
-        <div className="px-4 py-2">
-          <Input
-            ref={search}
-            type="search"
-            leadingIcon="search"
-            shortcut="/"
-            aria-label="Search customers"
-            placeholder="Search name, phone, email or company"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={query ? () => setQuery('') : undefined}
-            wrapperClassName="max-w-96"
-          />
-        </div>
+        <>
+          {duplicates && duplicates.count > 0 && (
+            <div className="flex items-center gap-3 border-b bg-muted/50 px-4 py-2 text-small text-muted-foreground">
+              <Icon name="bell" size={14} />
+              <span className="flex-1">
+                {duplicates.count} {duplicates.count === 1 ? 'record' : 'records'} from Zendesk look
+                like duplicates — matched by phone number
+              </span>
+              <Button variant="ghost" size="sm" onClick={duplicates.onReview}>
+                Review
+              </Button>
+            </div>
+          )}
+          <div className="px-4 py-2">
+            <Input
+              ref={search}
+              type="search"
+              leadingIcon="search"
+              shortcut="/"
+              aria-label="Search customers"
+              placeholder="Search name, phone, email or company"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onClear={query ? () => setQuery('') : undefined}
+              wrapperClassName="max-w-96"
+            />
+          </div>
+        </>
       }
     >
       {shown.length ? (

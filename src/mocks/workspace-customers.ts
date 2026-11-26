@@ -156,3 +156,145 @@ export const wsInventory: CustomerAsset[] = [
     warrantyUntil: '2026-12',
   },
 ]
+
+/* ── Tags (Figma C5) ───────────────────────────────────────────────────────────────── */
+
+export type TagStyle = 'outline' | 'filled' | 'dot'
+
+export interface CustomerTagDef {
+  id: string
+  name: string
+  description: string
+  style: TagStyle
+  /** Agents see it in the ticket's customer card. */
+  showOnTickets: boolean
+  /** Added by a rule, described here. */
+  autoRule?: string
+}
+
+export const wsTagDefs: CustomerTagDef[] = [
+  {
+    id: 'tg1',
+    name: 'VIP',
+    description: 'Key accounts — answer first',
+    style: 'filled',
+    showOnTickets: true,
+  },
+  {
+    id: 'tg2',
+    name: 'Frequent caller',
+    description: 'Called 3+ times in the last 30 days',
+    style: 'outline',
+    showOnTickets: true,
+    autoRule: 'Tag callers with 3+ calls in 30 days',
+  },
+  {
+    id: 'tg3',
+    name: 'Wholesale',
+    description: 'Buys for several stores',
+    style: 'outline',
+    showOnTickets: true,
+  },
+  {
+    id: 'tg4',
+    name: 'Needs callback',
+    description: 'Asked us to call back',
+    style: 'dot',
+    showOnTickets: true,
+  },
+  {
+    id: 'tg5',
+    name: 'Zendesk import',
+    description: 'Brought over from Zendesk',
+    style: 'outline',
+    showOnTickets: false,
+  },
+  {
+    id: 'tg6',
+    name: 'Pharmacy',
+    description: 'Regulated stock — check licence',
+    style: 'outline',
+    showOnTickets: true,
+  },
+]
+
+/* ── Possible duplicates (Figma C4) ────────────────────────────────────────────────── */
+
+/** A second record that looks like an existing customer (matched by phone). */
+export interface DuplicateRecord {
+  name: string
+  phone?: string
+  email?: string
+  company?: string
+  tags: string[]
+  tickets: number
+  /** ISO date. */
+  created: string
+  /** "Zendesk #3690273". */
+  externalId: string
+}
+
+export interface DuplicateGroup {
+  id: string
+  /** Record A — the customer already in TBT. */
+  customerId: string
+  /** Record B — the imported look-alike. */
+  other: DuplicateRecord
+}
+
+export const wsDuplicates: DuplicateGroup[] = [
+  {
+    id: 'd1',
+    customerId: wsCustomers.dennis.id,
+    other: {
+      name: 'Dennis Davenport',
+      phone: '(909) 802-3652',
+      email: 'dennis@davenport.co',
+      tags: ['Zendesk import'],
+      tickets: 1,
+      created: '2025-03-02',
+      externalId: 'Zendesk #3690273',
+    },
+  },
+  {
+    id: 'd2',
+    customerId: wsCustomers.acme.id,
+    other: {
+      name: 'Priya Nair',
+      phone: '(011) 245-0199',
+      email: 'priya.nair@acmecorp.example',
+      company: 'Acme Corporation',
+      tags: ['Zendesk import', 'Wholesale'],
+      tickets: 2,
+      created: '2024-08-14',
+      externalId: 'Zendesk #3581120',
+    },
+  },
+  {
+    id: 'd3',
+    customerId: wsCustomers.kandy.id,
+    other: {
+      name: 'Shanthi Rajan',
+      phone: '(081) 341-2290',
+      company: 'Kandy Foods Ltd',
+      tags: ['Zendesk import'],
+      tickets: 1,
+      created: '2025-01-21',
+      externalId: 'Zendesk #3611874',
+    },
+  },
+  {
+    id: 'd4',
+    customerId: wsCustomers.lanka.id,
+    other: {
+      name: 'Asha Perera',
+      phone: '(011) 555-0148',
+      email: 'asha@lankapharma.example',
+      company: 'Lanka Pharma',
+      tags: ['Zendesk import', 'Pharmacy'],
+      tickets: 3,
+      created: '2024-12-09',
+      externalId: 'Zendesk #3598001',
+    },
+  },
+]

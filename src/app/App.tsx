@@ -9,6 +9,7 @@ import { TicketsTablePage } from '@/pages/tickets/TicketsTablePage'
 import type { SavedView } from '@/pages/tickets/ticket-view'
 import { AppSidebar } from './AppSidebar'
 import { CustomerRoute, CustomersViewRoute } from './CustomerRoutes'
+import { CustomersRoot } from './CustomersRoot'
 import {
   defaultView,
   findNavItem,
@@ -134,13 +135,18 @@ function TicketRoute() {
 
 const router = createBrowserRouter([
   {
-    element: <WorkspaceRoot />,
+    element: <CustomersRoot />,
     children: [
-      { path: '/', element: <Navigate to="/inbox/all" replace /> },
-      { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
-      { path: '/customers/:view/:customerId', element: <CustomerRoute /> },
-      { path: '/:module/:view?', element: <ViewRoute /> },
-      { path: '*', element: <Navigate to="/" replace /> },
+      {
+        element: <WorkspaceRoot />,
+        children: [
+          { path: '/', element: <Navigate to="/inbox/all" replace /> },
+          { path: '/inbox/:view/:ticketId', element: <TicketRoute /> },
+          { path: '/customers/:view/:customerId', element: <CustomerRoute /> },
+          { path: '/:module/:view?', element: <ViewRoute /> },
+          { path: '*', element: <Navigate to="/" replace /> },
+        ],
+      },
     ],
   },
 ])

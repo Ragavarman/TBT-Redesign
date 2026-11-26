@@ -5,10 +5,10 @@ import { IncomingCallCard, NewTicketDialog, type NewTicketSubmit } from '@/compo
 import { useHotkeys } from '@/hooks/useHotkeys'
 import { WS_NOW, wsAgents, wsCurrentAgent, wsCustomers, wsTickets } from '@/mocks'
 import { formatTicketId, type Customer, type Ticket } from '@/types'
+import { useCustomers } from './customers-context'
 import { ticketPath } from './nav'
 import { WorkspaceContext, type TicketChange, type WorkspaceValue } from './workspace-context'
 
-const customers = Object.values(wsCustomers)
 const TEAMS = ['Support Team Alpha', 'Technical Team Beta', 'Sales Team Gamma']
 const APPLICATIONS = ['Customer Portal', 'POS', 'Inventory', 'Payments']
 const LABELS = ['Voicemail', 'Hardware', 'Billing', 'Payments', 'Access']
@@ -39,7 +39,13 @@ export function WorkspaceRoot() {
   const [prefill, setPrefill] = useState<string>()
   const [calling, setCalling] = useState(() => new URLSearchParams(location.search).has('call'))
 
-  useHotkeys({ c: () => newTicket() })
+  const { records, editCustomer } = useCustomers()
+  const customers = useMemo(() => records.map((r) => r.customer), [records])
+
+  // C: New ticket — or Add customer on the Customers pages (Figma C3 shows "Add customer C")
+  useHotkeys({
+    c: () => (location.pathname.startsWith('/customers') ? editCustomer() : newTicket()),
+  })
 
   // Demo: one incoming call per browser session, a few seconds after the app opens.
   useEffect(() => {
@@ -56,10 +62,15 @@ export function WorkspaceRoot() {
     }
   }, [calling])
 
-  const tickets = useMemo(
-    () => [...created, ...wsTickets].map((t) => (edits[t.id] ? { ...t, ...edits[t.id] } : t)),
-    [created, edits],
-  )
+  // edits applied, and requesters swapped for the latest customer record (renames, merges)
+  const tickets = useMemo(() => {
+    const byId = new Map(customers.map((c) => [c.id, c]))
+    return [...created, ...wsTickets].map((t) => {
+      const e = edits[t.id] ? { ...t, ...edits[t.id] } : t
+      const requester = byId.get(e.requester.id)
+      return requester && requester !== e.requester ? { ...e, requester } : e
+    })
+  }, [created, edits, customers])
 
   function newTicket(customerId?: unknown) {
     // buttons pass their click event straight through — only a string is a customer
@@ -90,7 +101,7 @@ export function WorkspaceRoot() {
       preview: f.description || f.subject,
       status: f.status,
       priority: f.priority,
-      requester: customers.find((c) => c.id === f.customerId)!,
+      requester: customers.find((c) => c.id === f.customerId) ?? wsCustomers.dennis,
       assignee: Object.values(wsAgents).find((a) => a.id === f.assigneeId),
       team: f.team,
       channel: f.channel,
