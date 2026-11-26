@@ -1,5 +1,20 @@
 import type { DateRange } from '@/components/organisms'
-import { createdVsResolved } from '@/mocks'
+import { createdVsResolved, WS_NOW } from '@/mocks'
+
+/** "Last 30 days" ending on the workspace's today. */
+export function last30(): DateRange {
+  const end = WS_NOW.slice(0, 10)
+  return {
+    start: new Date(Date.parse(`${end}T00:00:00Z`) - 29 * 86_400_000).toISOString().slice(0, 10),
+    end,
+  }
+}
+
+/** Scale a 30-day figure to the chosen period. */
+export const scaled = (n: number, r: DateRange) => Math.round((n * rangeDays(r)) / 30)
+
+/** Deterministic 0..1 noise for illustrative trends. */
+export const seeded = (seed: string) => noise(seed)
 
 /**
  * Illustrative created / resolved volume for any period (the mock workspace has no history).
@@ -45,7 +60,7 @@ function day(d: string, team: string): VolumePoint {
 
 export const rangeDays = (r: DateRange) => Math.round((toTime(r.end) - toTime(r.start)) / DAY) + 1
 
-/** Daily points up to 31 days; weekly sums beyond that (so bars stay readable). */
+/** Daily points up to 14 days; weekly sums beyond that (so bars stay readable). */
 export function volumeSeries(
   r: DateRange,
   team = 'all',
@@ -62,7 +77,8 @@ export function volumeSeries(
   }
   const days = Array.from({ length: rangeDays(r) }, (_, i) => iso(toTime(r.start) + i * DAY))
   const daily = days.map((d) => day(d, team))
-  if (days.length <= 31) return { unit: 'Daily', points: daily }
+  // fixed-width bars: beyond two weeks a daily chart no longer fits, so sum by week
+  if (days.length <= 14) return { unit: 'Daily', points: daily }
   const weeks: VolumePoint[] = []
   for (let i = 0; i < daily.length; i += 7) {
     const chunk = daily.slice(i, i + 7)

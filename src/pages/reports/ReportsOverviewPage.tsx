@@ -7,6 +7,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   EmptyState,
+  toast,
 } from '@/components/molecules'
 import {
   BarChart,
@@ -15,6 +16,7 @@ import {
   ChartLegend,
   ChartNote,
   DateRangePicker,
+  ExportDialog,
   formatRange,
   KpiStrip,
   PageHeader,
@@ -49,6 +51,8 @@ export interface ReportsOverviewPageProps {
   initialRange?: DateRange
   /** Stories: open the date picker on load (Figma X18 variant). */
   pickerOpen?: boolean
+  /** Stories: open Export & schedule on load (Figma X19). */
+  exportOpen?: boolean
   onOpenTicket?: (id: number) => void
 }
 
@@ -57,11 +61,13 @@ export function ReportsOverviewPage({
   tickets: all,
   initialRange = { start: '2026-11-11', end: '2026-11-18' },
   pickerOpen,
+  exportOpen,
   onOpenTicket,
 }: ReportsOverviewPageProps) {
   const [range, setRange] = useState(initialRange)
   const [compare, setCompare] = useState(false)
   const [team, setTeam] = useState('all')
+  const [exporting, setExporting] = useState(exportOpen ?? false)
 
   const tickets = useMemo(
     () => (team === 'all' ? all : all.filter((t) => t.team === team)),
@@ -141,12 +147,7 @@ export function ReportsOverviewPage({
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                variant="ghost"
-                leadingIcon="download"
-                disabled
-                title="Export & schedule comes in the next step"
-              >
+              <Button variant="secondary" leadingIcon="download" onClick={() => setExporting(true)}>
                 Export
               </Button>
             </>
@@ -334,6 +335,19 @@ export function ReportsOverviewPage({
           </div>
         )}
       </ChartCard>
+      <ExportDialog
+        key={exporting ? 'open' : 'closed'}
+        open={exporting}
+        onOpenChange={setExporting}
+        subject={`Overview · ${formatRange(range)}`}
+        defaultRecipients={['tharsi@tbt.lk', 'support-leads@tbt.lk']}
+        onDownload={(f) => toast.success(`Overview downloaded as ${f.toUpperCase()}`)}
+        onSchedule={(f, s) =>
+          toast.success(`Scheduled · ${f.toUpperCase()} ${s.every.toLowerCase()} at ${s.at}`, {
+            description: `To ${s.to.join(', ')}`,
+          })
+        }
+      />
     </DashboardTemplate>
   )
 }

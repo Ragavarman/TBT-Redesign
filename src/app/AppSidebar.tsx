@@ -39,20 +39,34 @@ export function AppSidebar({
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(initialCollapsed ?? readCollapsed)
   const nav = moduleNav[module] ?? moduleNav.inbox!
-  const { views } = useSavedViews()
+  const { views, reports } = useSavedViews()
   const { newTicket } = useWorkspace()
 
   // Saved views go under Views, and favourites under Favorites too.
+  // Saved reports go under Saved reports, before + New report.
   const sections =
-    module !== 'inbox' || views.length === 0
-      ? nav.sections
-      : nav.sections.map((s) =>
-          s.id === 'views'
-            ? { ...s, items: [...s.items, ...savedViewItems(views)] }
-            : s.id === 'favorites'
-              ? { ...s, items: [...s.items, ...savedViewItems(views.filter((v) => v.favorite))] }
-              : s,
+    module === 'reports'
+      ? nav.sections.map((s) =>
+          s.id === 'saved'
+            ? {
+                ...s,
+                items: [
+                  ...s.items.filter((i) => i.id !== 'new'),
+                  ...reports.map((r) => ({ id: r.id, label: r.name, icon: 'reports' as const })),
+                  ...s.items.filter((i) => i.id === 'new'),
+                ],
+              }
+            : s,
         )
+      : module !== 'inbox' || views.length === 0
+        ? nav.sections
+        : nav.sections.map((s) =>
+            s.id === 'views'
+              ? { ...s, items: [...s.items, ...savedViewItems(views)] }
+              : s.id === 'favorites'
+                ? { ...s, items: [...s.items, ...savedViewItems(views.filter((v) => v.favorite))] }
+                : s,
+          )
 
   return (
     <Sidebar
