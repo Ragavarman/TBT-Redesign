@@ -9,7 +9,7 @@ export interface RailItemProps extends Omit<ComponentProps<'button'>, 'children'
   icon: IconName | LucideIcon
   /** Module name — accessible label and tooltip text. */
   label: string
-  /** Current module: primary (accent) fill, primary-foreground icon. */
+  /** Current module: card fill + border, foreground icon. */
   active?: boolean
   /** Destructive notification dot at the top-right. */
   dot?: boolean
@@ -46,8 +46,7 @@ export function RailItem({
         'text-body-strong [--bw:1px] [--icon:1.125rem] [--lh:1.4286] [--py:calc(8em/14)]',
         'text-muted-foreground transition-colors duration-150 outline-none',
         'hover:bg-accent hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring',
-        'data-active:border-primary data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs',
-        'data-active:hover:bg-primary/90 data-active:hover:text-primary-foreground',
+        'data-active:border-border data-active:bg-card data-active:text-foreground',
         className,
       )}
       {...props}
