@@ -178,13 +178,18 @@ export function InventoryViewRoute({ view }: { view: string }) {
           {
             key: 'item',
             label: 'Item',
+            className: 'min-w-56',
             sort: (i) => i.name,
+            render: (i) => <span className="line-clamp-1 pe-4">{i.name}</span>,
+          },
+          {
+            key: 'model',
+            label: 'Model',
+            className: 'w-48',
+            sort: (i) => `${i.brand} ${i.model}`,
             render: (i) => (
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate">{i.name}</span>
-                <span className="truncate text-small text-muted-foreground">
-                  {i.brand} {i.model}
-                </span>
+              <span className="line-clamp-1 pe-4 text-muted-foreground">
+                {i.brand} {i.model}
               </span>
             ),
           },
